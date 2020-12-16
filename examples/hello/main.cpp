@@ -1,16 +1,19 @@
-#include "app.hpp"
 
-class hello : public gn::app
+#include "guinea.hpp"
+
+
+struct app final : ui::guinea
 {
-    virtual void on_update(bool&) override
+    void loop(bool&) noexcept override
     {
-        if (GN(Window, "Test"))
-            gn::Text("Hello World");
+        if (GUI(Window, "hello world"))
+        {
+
+        }
     }
 };
 
-
-int main(int argc, char** argv)
+int main()
 {
-    return hello().launch(argc, argv);
+    return app{}.launch();
 }

@@ -31,8 +31,9 @@
 *.out
 *.app
 
-# CMake
-CMakeSettings.json
-out
-build
+#
 .vs
+.vscode
+build
+install
+imgui.ini

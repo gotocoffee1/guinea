@@ -1,5 +1,8 @@
-add_executable(hello)
+add_executable(example main.cpp)
+target_link_libraries(example guinea::guinea)
 
-target_sources(hello PRIVATE "main.cpp")
-
-target_link_libraries(hello PRIVATE guinea)
+if(EMSCRIPTEN)
+  target_compile_options(example PRIVATE "SHELL:-s WASM=1")
+  target_link_options(example PRIVATE "SHELL:-s WASM=1")
+  set_target_properties(example PROPERTIES SUFFIX ".html")
+endif()
