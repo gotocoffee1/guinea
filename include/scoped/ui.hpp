@@ -228,6 +228,28 @@ struct Combo
     DELETE_MOVE_COPY(Combo);
 };
 
+struct Table
+{
+    bool IsOpen;
+
+    Table(const char* str_id, int column, ImGuiTableFlags flags = 0, const ImVec2& outer_size = ImVec2(0.0f, 0.0f), float inner_width = 0.0f)
+    {
+        IsOpen = ImGui::BeginTable(str_id, column, flags, outer_size, inner_width);
+    }
+    ~Table()
+    {
+        if (IsOpen)
+            ImGui::EndTable();
+    }
+
+    explicit operator bool() const
+    {
+        return IsOpen;
+    }
+
+    DELETE_MOVE_COPY(Table);
+};
+
 struct TabBar
 {
     bool IsOpen;
