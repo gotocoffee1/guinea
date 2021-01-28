@@ -17,6 +17,10 @@ void guinea::create_context() noexcept
     ui::CreateContext();
     ui::plot::CreateContext();
     ui::ne::SetCurrentEditor(ui::ne::CreateEditor());
+
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.WindowRounding = 0.0f;
+    style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 }
 
 void guinea::destroy_context() noexcept
