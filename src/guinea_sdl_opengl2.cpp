@@ -76,6 +76,8 @@ int guinea::launch(int argc, char** argv) noexcept
     auto next       = steady_clock::now() + Framerate{1};
     // Main loop
     load();
+
+    uint8_t frame_cnt = 0;
     for (;;)
     {
         // Poll and handle events (inputs, window resize, etc.)
@@ -84,6 +86,7 @@ int guinea::launch(int argc, char** argv) noexcept
         // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
         // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
         bool done = false;
+
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
@@ -92,33 +95,39 @@ int guinea::launch(int argc, char** argv) noexcept
                 done = true;
             if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window))
                 done = true;
+            frame_cnt = 0;
         }
+        if (update(done))
+            frame_cnt = 0;
 
-        // Start the Dear ImGui frame
-        ImGui_ImplOpenGL2_NewFrame();
-
-        ImGui_ImplSDL2_NewFrame(window);
-        ImGui::NewFrame();
-
-        loop(done);
-        // Rendering
-        ImGui::Render();
-
-        glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
-        glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-        glClear(GL_COLOR_BUFFER_BIT);
-        //glUseProgram(0); // You may want this if using this code in an OpenGL 3+ context where shaders may be bound
-        ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
-
-        // Update and Render additional Platform Windows
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        if (frame_cnt++ < 5)
         {
-            ImGui::UpdatePlatformWindows();
-            ImGui::RenderPlatformWindowsDefault();
-        }
+            // Start the Dear ImGui frame
+            ImGui_ImplOpenGL2_NewFrame();
 
-        SDL_GL_MakeCurrent(window, gl_context);
-        SDL_GL_SwapWindow(window);
+            ImGui_ImplSDL2_NewFrame(window);
+            ImGui::NewFrame();
+
+            render();
+            // Rendering
+            ImGui::Render();
+
+            glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
+            glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+            glClear(GL_COLOR_BUFFER_BIT);
+            //glUseProgram(0); // You may want this if using this code in an OpenGL 3+ context where shaders may be bound
+            ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
+
+            // Update and Render additional Platform Windows
+            if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+            {
+                ImGui::UpdatePlatformWindows();
+                ImGui::RenderPlatformWindowsDefault();
+            }
+
+            SDL_GL_MakeCurrent(window, gl_context);
+            SDL_GL_SwapWindow(window);
+        }
         if (done)
             break;
         std::this_thread::sleep_until(next);

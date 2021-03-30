@@ -3,7 +3,7 @@
 
 struct app final : ui::guinea
 {
-    void loop(bool&) noexcept override
+    void render() noexcept override
     {
         if (GUI(Window, "hello world"))
         {

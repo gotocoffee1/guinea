@@ -24,8 +24,12 @@ class guinea
     virtual void load(void) noexcept
     {
     }
-    virtual void loop(bool&) noexcept
+    virtual void render() noexcept
     {
+    }
+    virtual bool update(bool&) noexcept
+    {
+      return false;
     }
     virtual void unload(void) noexcept
     {
@@ -48,8 +52,11 @@ class guinea
     }
 
   private:
+#ifdef __EMSCRIPTEN__
     static void inner_loop(void*) noexcept;
-
+    uint8_t frame_cnt;
+    bool done;
+#endif
     void create_context() noexcept;
     void destroy_context() noexcept;
 };

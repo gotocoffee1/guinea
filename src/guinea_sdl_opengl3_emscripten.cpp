@@ -7,6 +7,7 @@
 #include <SDL.h>
 #include <SDL_opengles2.h>
 #include <emscripten.h>
+#include <emscripten/html5.h>
 
 namespace ui
 {
@@ -58,7 +59,6 @@ int guinea::launch(int argc, char** argv) noexcept
     IMGUI_CHECKVERSION();
     create_context();
     ImGuiIO& io = ImGui::GetIO();
-    (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; // Enable Docking
@@ -75,66 +75,75 @@ int guinea::launch(int argc, char** argv) noexcept
     ImGui_ImplSDL2_InitForOpenGL(g_Window, g_GLContext);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    // Load Fonts
-    // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
-    // - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
-    // - If the file cannot be loaded, the function will return NULL. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
-    // - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.
-    // - Read 'docs/FONTS.txt' for more instructions and details.
-    // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
-    // - Emscripten allows preloading a file or folder to be accessible at runtime. See Makefile for details.
     load();
 
-    // This function call won't return, and will engage in an infinite loop, processing events from the browser, and dispatching them.
-    emscripten_set_main_loop_arg(inner_loop, this, 0, true);
-    unload();
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplSDL2_Shutdown();
-    destroy_context();
-    SDL_GL_DeleteContext(g_GLContext);
-    SDL_DestroyWindow(g_Window);
-    SDL_Quit();
+    done      = false;
+    frame_cnt = 0;
 
-    return shutdown();
+    emscripten_set_beforeunload_callback(
+        this,
+        [](int, const void*, void* arg) -> const char* {
+            guinea& self = *static_cast<guinea*>(arg);
+            self.done = true;
+            self.unload();
+            ImGui_ImplOpenGL3_Shutdown();
+            ImGui_ImplSDL2_Shutdown();
+            self.destroy_context();
+            SDL_GL_DeleteContext(g_GLContext);
+            SDL_DestroyWindow(g_Window);
+            SDL_Quit();
+
+            self.shutdown();
+
+            return nullptr;
+        });
+
+    emscripten_set_timeout_loop([](double, void* arg) -> EM_BOOL {
+        guinea& self = *static_cast<guinea*>(arg);
+        if (self.update(self.done))
+            self.frame_cnt = 0;
+        return EM_TRUE;
+    },
+                                1000.0 / 30.0,
+                                this);
+    emscripten_set_main_loop_arg(inner_loop, this, 0, true);
+    return EXIT_SUCCESS;
 }
 
 void guinea::inner_loop(void* arg) noexcept
 {
     ImGuiIO& io  = ImGui::GetIO();
     guinea& self = *static_cast<guinea*>(arg);
-    // Our state (make them static = more or less global) as a convenience to keep the example terse.
 
     ImVec4 clear_color = ImColor(62, 62, 66);
 
-    // Poll and handle events (inputs, window resize, etc.)
-    // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
-    // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
-    // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
-    // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
-    bool done = false;
+    self.done = false;
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
         ImGui_ImplSDL2_ProcessEvent(&event);
         if (event.type == SDL_QUIT)
-            done = true;
+            self.done = true;
         if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(g_Window))
-            done = true;
+            self.done = true;
+        self.frame_cnt = 0;
     }
+    if (self.frame_cnt++ < 5)
+    {
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplSDL2_NewFrame(g_Window);
+        ImGui::NewFrame();
 
-    // Start the Dear ImGui frame
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplSDL2_NewFrame(g_Window);
-    ImGui::NewFrame();
-
-    self.loop(done);
-    // Rendering
-    ImGui::Render();
-    SDL_GL_MakeCurrent(g_Window, g_GLContext);
-    glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
-    glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-    glClear(GL_COLOR_BUFFER_BIT);
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    SDL_GL_SwapWindow(g_Window);
+        self.render();
+        // Rendering
+        ImGui::Render();
+        SDL_GL_MakeCurrent(g_Window, g_GLContext);
+        glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
+        glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+        glClear(GL_COLOR_BUFFER_BIT);
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        SDL_GL_SwapWindow(g_Window);
+    }
 }
 } // namespace ui
