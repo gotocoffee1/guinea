@@ -54,18 +54,18 @@ struct Plot
     DELETE_MOVE_COPY(Plot);
 };
 
-struct LegendDragDropSource
+struct DragDropTarget
 {
     bool IsOpen;
-    LegendDragDropSource(const char* label_id, ImGuiDragDropFlags flags = 0)
+    DragDropTarget()
     {
-        IsOpen = ImPlot::BeginLegendDragDropSource(label_id, flags);
+        IsOpen = ImPlot::BeginDragDropTarget();
     }
 
-    ~LegendDragDropSource()
+    ~DragDropTarget()
     {
         if (IsOpen)
-            ImPlot::EndLegendDragDropSource();
+            ImPlot::EndDragDropTarget();
     }
 
     explicit operator bool() const
@@ -73,7 +73,29 @@ struct LegendDragDropSource
         return IsOpen;
     }
 
-    DELETE_MOVE_COPY(LegendDragDropSource);
+    DELETE_MOVE_COPY(DragDropTarget);
+};
+
+struct DragDropSource
+{
+    bool IsOpen;
+    DragDropSource(ImGuiKeyModFlags key_mods = ImGuiKeyModFlags_Ctrl, ImGuiDragDropFlags flags = 0)
+    {
+        IsOpen = ImPlot::BeginDragDropSource(key_mods, flags);
+    }
+
+    ~DragDropSource()
+    {
+        if (IsOpen)
+            ImPlot::EndDragDropSource();
+    }
+
+    explicit operator bool() const
+    {
+        return IsOpen;
+    }
+
+    DELETE_MOVE_COPY(DragDropSource);
 };
 
 struct LegendPopup
@@ -159,9 +181,9 @@ struct Colormap
         ImPlot::PushColormap(colormap);
     }
 
-    Colormap(const ImVec4* colormap, int size)
+    Colormap(const char* name)
     {
-        ImPlot::PushColormap(colormap, size);
+        ImPlot::PushColormap(name);
     }
 
     ~Colormap()
