@@ -14,7 +14,8 @@ if(MSVC)
   target_compile_definitions(guinea PUBLIC _CRT_SECURE_NO_WARNINGS)
 endif()
 
-target_compile_definitions(guinea PUBLIC IMGUI_USER_CONFIG=\"config.hpp\")
+set(IMGUI_USER_CONFIG \"config.hpp\" CACHE STRING "Imgui config file")
+target_compile_definitions(guinea PUBLIC IMGUI_USER_CONFIG=${IMGUI_USER_CONFIG})
 
 set(GUINEA_PLATFORM
     "sdl"
