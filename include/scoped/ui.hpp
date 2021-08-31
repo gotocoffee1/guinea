@@ -657,6 +657,20 @@ struct DragDropTarget
     DELETE_MOVE_COPY(DragDropTarget);
 };
 
+struct Disabled
+{
+    Disabled(bool disabled = true)
+    {
+        ImGui::BeginDisabled(disabled);
+    }
+    ~Disabled()
+    {
+        ImGui::EndDisabled();
+    }
+
+    DELETE_MOVE_COPY(Disabled);
+};
+
 struct ClipRect
 {
     ClipRect(const ImVec2& clip_rect_min, const ImVec2& clip_rect_max, bool intersect_with_current_clip_rect)
@@ -695,5 +709,5 @@ struct ChildFrame
 #undef DELETE_MOVE_COPY
 
 } // namespace ui
-} // namespace scope
+} // namespace scoped
 #endif

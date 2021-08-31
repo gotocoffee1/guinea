@@ -96,13 +96,13 @@ bool VSliderNum(const char* label, const ImVec2& size, T& p_data, const U& p_min
 }
 
 template<typename T>
-bool InputNum(const char* label, T& p_data, const T* p_step = nullptr, const T* p_step_fast = nullptr, const char* format = nullptr, ImGuiSliderFlags flags = 0) noexcept
+bool InputNum(const char* label, T& p_data, const T* p_step = nullptr, const T* p_step_fast = nullptr, const char* format = nullptr, ImGuiInputTextFlags flags = 0) noexcept
 {
     return ImGui::InputScalar(label, map_imgui_datatype<T>(), &p_data, p_step, p_step_fast, format, flags);
 }
 
 template<typename T, typename U = T, typename V = T>
-bool InputNum(const char* label, T& p_data, const U& p_step, const V& p_step_fast = std::numeric_limits<T>::max(), const char* format = nullptr, ImGuiSliderFlags flags = 0) noexcept
+bool InputNum(const char* label, T& p_data, const U& p_step, const V& p_step_fast = std::numeric_limits<T>::max(), const char* format = nullptr, ImGuiInputTextFlags flags = 0) noexcept
 {
     T step, fast_step;
     return InputNum(label, p_data, to_ptr(step, p_step_fast), to_ptr(fast_step, p_step_fast), format, flags);
