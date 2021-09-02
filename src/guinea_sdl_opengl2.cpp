@@ -86,15 +86,34 @@ int guinea::launch(int argc, char** argv) noexcept
         // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
         // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
         bool done = false;
-
+        std::string dropfile;
+        const char* droptype = nullptr;
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
             ImGui_ImplSDL2_ProcessEvent(&event);
-            if (event.type == SDL_QUIT)
+
+            switch (event.type)
+            {
+            case (SDL_QUIT):
                 done = true;
-            if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window))
-                done = true;
+                break;
+            case (SDL_WINDOWEVENT):
+                if (event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window))
+                    done = true;
+                break;
+            case (SDL_DROPTEXT):
+            case (SDL_DROPFILE):
+                droptype = (event.type == SDL_DROPFILE) ? UI_EXTERN_FILE : UI_EXTERN_TEXT;
+                dropfile.append(event.drop.file, std::strlen(event.drop.file) + 1);
+                SDL_free(event.drop.file);
+                break;
+            case (SDL_DROPCOMPLETE):
+                if (GUI(DragDropSource, ImGuiDragDropFlags_SourceExtern))
+                    ImGui::SetDragDropPayload(droptype, &dropfile[0], std::size(dropfile));
+                break;
+            }
+
             frame_cnt = 0;
         }
         if (update(done))
@@ -107,7 +126,6 @@ int guinea::launch(int argc, char** argv) noexcept
 
             ImGui_ImplSDL2_NewFrame(window);
             ImGui::NewFrame();
-
             render();
             // Rendering
             ImGui::Render();
@@ -128,6 +146,7 @@ int guinea::launch(int argc, char** argv) noexcept
             SDL_GL_MakeCurrent(window, gl_context);
             SDL_GL_SwapWindow(window);
         }
+
         if (done)
             break;
         std::this_thread::sleep_until(next);

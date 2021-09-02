@@ -82,9 +82,10 @@ int guinea::launch(int argc, char** argv) noexcept
 
     emscripten_set_beforeunload_callback(
         this,
-        [](int, const void*, void* arg) -> const char* {
+        [](int, const void*, void* arg) -> const char*
+        {
             guinea& self = *static_cast<guinea*>(arg);
-            self.done = true;
+            self.done    = true;
             self.unload();
             ImGui_ImplOpenGL3_Shutdown();
             ImGui_ImplSDL2_Shutdown();
@@ -98,12 +99,13 @@ int guinea::launch(int argc, char** argv) noexcept
             return nullptr;
         });
 
-    emscripten_set_timeout_loop([](double, void* arg) -> EM_BOOL {
-        guinea& self = *static_cast<guinea*>(arg);
-        if (self.update(self.done))
-            self.frame_cnt = 0;
-        return EM_TRUE;
-    },
+    emscripten_set_timeout_loop([](double, void* arg) -> EM_BOOL
+                                {
+                                    guinea& self = *static_cast<guinea*>(arg);
+                                    if (self.update(self.done))
+                                        self.frame_cnt = 0;
+                                    return EM_TRUE;
+                                },
                                 1000.0 / 30.0,
                                 this);
     emscripten_set_main_loop_arg(inner_loop, this, 0, true);
@@ -118,14 +120,32 @@ void guinea::inner_loop(void* arg) noexcept
     ImVec4 clear_color = ImColor(62, 62, 66);
 
     self.done = false;
+    std::string dropfile;
+    const char* droptype = nullptr;
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
         ImGui_ImplSDL2_ProcessEvent(&event);
-        if (event.type == SDL_QUIT)
+        switch (event.type)
+        {
+        case (SDL_QUIT):
             self.done = true;
-        if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(g_Window))
-            self.done = true;
+            break;
+        case (SDL_WINDOWEVENT):
+            if (event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window))
+                self.done = true;
+            break;
+        case (SDL_DROPTEXT):
+        case (SDL_DROPFILE):
+            droptype = (event.type == SDL_DROPFILE) ? UI_EXTERN_FILE : UI_EXTERN_TEXT;
+            dropfile.append(event.drop.file, std::strlen(event.drop.file) + 1);
+            SDL_free(event.drop.file);
+            break;
+        case (SDL_DROPCOMPLETE):
+            if (GUI(DragDropSource, ImGuiDragDropFlags_SourceExtern))
+                ImGui::SetDragDropPayload(droptype, &dropfile[0], std::size(dropfile));
+            break;
+        }
         self.frame_cnt = 0;
     }
     if (self.frame_cnt++ < 5)

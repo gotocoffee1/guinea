@@ -12,6 +12,14 @@
 #include "scoped/ui.hpp"
 #include "widgets.hpp"
 
+#ifndef UI_EXTERN_FILE
+#define UI_EXTERN_FILE "EXTERN_FILE"
+#endif
+
+#ifndef UI_EXTERN_TEXT
+#define UI_EXTERN_TEXT "EXTERN_TEXT"
+#endif
+
 namespace ui
 {
 class guinea
