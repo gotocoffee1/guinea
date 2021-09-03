@@ -108,10 +108,6 @@ int guinea::launch(int argc, char** argv) noexcept
                 dropfile.append(event.drop.file, std::strlen(event.drop.file) + 1);
                 SDL_free(event.drop.file);
                 break;
-            case (SDL_DROPCOMPLETE):
-                if (GUI(DragDropSource, ImGuiDragDropFlags_SourceExtern))
-                    ImGui::SetDragDropPayload(droptype, &dropfile[0], std::size(dropfile));
-                break;
             }
 
             frame_cnt = 0;
@@ -126,6 +122,9 @@ int guinea::launch(int argc, char** argv) noexcept
 
             ImGui_ImplSDL2_NewFrame(window);
             ImGui::NewFrame();
+            if (droptype)
+                if (GUI(DragDropSource, ImGuiDragDropFlags_SourceExtern))
+                    ImGui::SetDragDropPayload(droptype, &dropfile[0], std::size(dropfile));
             render();
             // Rendering
             ImGui::Render();
