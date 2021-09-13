@@ -9,6 +9,7 @@
 #include <SDL.h>
 #include <chrono>
 #include <thread>
+#include <cstring>
 
 namespace ui
 {
