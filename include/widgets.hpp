@@ -69,40 +69,52 @@ constexpr const T* to_ptr(T& mem, const U& val) noexcept
 }
 
 template<typename T>
-bool DragNum(const char* label, T& p_data, float v_speed = 1.0f, const T* p_min = nullptr, const T* p_max = nullptr, const char* format = nullptr, ImGuiSliderFlags flags = 0) noexcept
+bool DragNum(const char* label, T& p_data, float v_speed = 1.0f, const T* p_min = nullptr, const T* p_max = nullptr, const char* format = nullptr, ImGuiSliderFlags flags = ImGuiSliderFlags_None) noexcept
 {
     return ImGui::DragScalar(label, map_imgui_datatype<T>(), &p_data, v_speed, p_min, p_max, format, flags);
 }
 
+template<typename T>
+bool DragNum(const char* label, T& p_data, float v_speed, std::nullptr_t p_min, std::nullptr_t p_max, const char* format = nullptr, ImGuiSliderFlags flags = ImGuiSliderFlags_None) noexcept
+{
+    return DragNum(label, p_data, v_speed, static_cast<T*>(p_min), static_cast<T*>(p_max), format, flags);
+}
+
 template<typename T, typename U = T, typename V = T>
-bool DragNum(const char* label, T& p_data, float v_speed, const U& p_min, const V& p_max = std::numeric_limits<T>::max(), const char* format = nullptr, ImGuiSliderFlags flags = 0) noexcept
+bool DragNum(const char* label, T& p_data, float v_speed, const U& p_min, const V& p_max = std::numeric_limits<T>::max(), const char* format = nullptr, ImGuiSliderFlags flags = ImGuiSliderFlags_None) noexcept
 {
     T min, max;
     return DragNum(label, p_data, v_speed, to_ptr(min, p_min), to_ptr(max, p_max), format, flags);
 }
 
 template<typename T, typename U = T, typename V = T>
-bool SliderNum(const char* label, T& p_data, const U& p_min, const V& p_max, const char* format = nullptr, ImGuiSliderFlags flags = 0) noexcept
+bool SliderNum(const char* label, T& p_data, const U& p_min, const V& p_max, const char* format = nullptr, ImGuiSliderFlags flags = ImGuiSliderFlags_None) noexcept
 {
     T min, max;
     return ImGui::SliderScalar(label, map_imgui_datatype<T>(), &p_data, to_ptr(min, p_min), to_ptr(max, p_max), format, flags);
 }
 
 template<typename T, typename U = T, typename V = T>
-bool VSliderNum(const char* label, const ImVec2& size, T& p_data, const U& p_min, const V& p_max, const char* format = nullptr, ImGuiSliderFlags flags = 0) noexcept
+bool VSliderNum(const char* label, const ImVec2& size, T& p_data, const U& p_min, const V& p_max, const char* format = nullptr, ImGuiSliderFlags flags = ImGuiSliderFlags_None) noexcept
 {
     T min, max;
     return ImGui::VSliderScalar(label, size, map_imgui_datatype<T>(), &p_data, to_ptr(min, p_min), to_ptr(max, p_max), format, flags);
 }
 
 template<typename T>
-bool InputNum(const char* label, T& p_data, const T* p_step = nullptr, const T* p_step_fast = nullptr, const char* format = nullptr, ImGuiInputTextFlags flags = 0) noexcept
+bool InputNum(const char* label, T& p_data, const T* p_step = nullptr, const T* p_step_fast = nullptr, const char* format = nullptr, ImGuiInputTextFlags flags = ImGuiInputTextFlags_None) noexcept
 {
     return ImGui::InputScalar(label, map_imgui_datatype<T>(), &p_data, p_step, p_step_fast, format, flags);
 }
 
+template<typename T>
+bool InputNum(const char* label, T& p_data, std::nullptr_t p_step, std::nullptr_t p_step_fast, const char* format = nullptr, ImGuiInputTextFlags flags = ImGuiInputTextFlags_None) noexcept
+{
+    return InputNum(label, p_data, static_cast<T*>(p_step), static_cast<T*>(p_step_fast), format, flags);
+}
+
 template<typename T, typename U = T, typename V = T>
-bool InputNum(const char* label, T& p_data, const U& p_step, const V& p_step_fast = std::numeric_limits<T>::max(), const char* format = nullptr, ImGuiInputTextFlags flags = 0) noexcept
+bool InputNum(const char* label, T& p_data, const U& p_step, const V& p_step_fast = std::numeric_limits<T>::max(), const char* format = nullptr, ImGuiInputTextFlags flags = ImGuiInputTextFlags_None) noexcept
 {
     T step, fast_step;
     return InputNum(label, p_data, to_ptr(step, p_step_fast), to_ptr(fast_step, p_step_fast), format, flags);
