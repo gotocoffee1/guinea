@@ -8,6 +8,7 @@
 #include <SDL_opengles2.h>
 #include <emscripten.h>
 #include <emscripten/html5.h>
+#include <cstring>
 
 namespace ui
 {
