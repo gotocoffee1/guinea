@@ -9,4 +9,4 @@ if(NOT implot_POPULATED)
 endif()
 target_sources(guinea PRIVATE "${implot_SOURCE_DIR}/implot.cpp"
                               "${implot_SOURCE_DIR}/implot_items.cpp")
-target_include_directories(guinea PUBLIC "${implot_SOURCE_DIR}")
+target_include_directories(guinea PUBLIC $<BUILD_INTERFACE:${implot_SOURCE_DIR}>)

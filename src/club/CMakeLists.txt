@@ -6,5 +6,5 @@ FetchContent_Declare(
 FetchContent_GetProperties(imgui_club)
 if(NOT imgui_club_POPULATED)
   FetchContent_Populate(imgui_club)
-  target_include_directories(guinea PUBLIC "${imgui_club_SOURCE_DIR}")
+  target_include_directories(guinea PUBLIC $<BUILD_INTERFACE:${imgui_club_SOURCE_DIR}>)
 endif()

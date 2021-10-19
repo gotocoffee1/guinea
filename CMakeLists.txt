@@ -7,14 +7,15 @@ add_library(guinea::guinea ALIAS guinea)
 
 target_compile_features(guinea PUBLIC cxx_std_17)
 
-target_include_directories(
-  guinea PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(guinea PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 
 if(MSVC)
   target_compile_definitions(guinea PUBLIC _CRT_SECURE_NO_WARNINGS)
 endif()
 
-set(IMGUI_USER_CONFIG \"config.hpp\" CACHE STRING "Imgui config file")
+set(IMGUI_USER_CONFIG
+    \"config.hpp\"
+    CACHE STRING "Imgui config file")
 target_compile_definitions(guinea PUBLIC IMGUI_USER_CONFIG=${IMGUI_USER_CONFIG})
 
 set(GUINEA_PLATFORM
@@ -31,7 +32,11 @@ else()
       CACHE STRING "Platform")
 endif()
 
-target_compile_definitions(guinea PUBLIC GUINEA_PLATFORM_${GUINEA_PLATFORM} GUINEA_RENDERER_${GUINEA_RENDERER})
+option(BUILD_GUINEA_EXAMPLES "Build guinea examples" OFF)
+option(BUILD_GUINEA_TESTS "Build guinea tests" OFF)
+
+target_compile_definitions(guinea PUBLIC GUINEA_PLATFORM_${GUINEA_PLATFORM}
+                                         GUINEA_RENDERER_${GUINEA_RENDERER})
 
 if(GUINEA_PLATFORM MATCHES "sdl")
   if(EMSCRIPTEN)
@@ -57,4 +62,7 @@ if(GUINEA_RENDERER MATCHES "opengl." AND NOT EMSCRIPTEN)
 endif()
 
 add_subdirectory(src)
-add_subdirectory(examples)
+
+if(BUILD_GUINEA_EXAMPLES)
+  add_subdirectory(examples)
+endif()

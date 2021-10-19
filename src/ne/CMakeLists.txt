@@ -9,7 +9,7 @@ if(NOT imgui-node-editor_POPULATED)
 
 endif()
 
-target_include_directories(guinea PUBLIC "${imgui-node-editor_SOURCE_DIR}")
+target_include_directories(guinea PUBLIC $<BUILD_INTERFACE:${imgui-node-editor_SOURCE_DIR}>)
 target_sources(
   guinea
   PRIVATE "${imgui-node-editor_SOURCE_DIR}/crude_json.cpp"

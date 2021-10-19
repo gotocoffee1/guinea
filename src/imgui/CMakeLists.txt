@@ -22,6 +22,6 @@ target_sources(
   PRIVATE "${imgui_SOURCE_DIR}/backends/imgui_impl_${GUINEA_PLATFORM}.cpp"
           "${imgui_SOURCE_DIR}/backends/imgui_impl_${GUINEA_RENDERER}.cpp")
 
-target_include_directories(guinea PRIVATE "${imgui_SOURCE_DIR}/backends")
+target_include_directories(guinea PRIVATE $<BUILD_INTERFACE:${imgui_SOURCE_DIR}/backends>)
 
-target_include_directories(guinea PUBLIC "${imgui_SOURCE_DIR}")
+target_include_directories(guinea PUBLIC $<BUILD_INTERFACE:${imgui_SOURCE_DIR}>)
