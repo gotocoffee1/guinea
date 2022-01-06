@@ -1,7 +1,7 @@
 FetchContent_Declare(
   imgui_club
   GIT_REPOSITORY https://github.com/ocornut/imgui_club.git
-  GIT_TAG 02e679b7f4cfb01f9480dcbcac59552879f96573)
+  GIT_TAG 450b9cf352c51530b9e23fb14b83891c2555b032)
 
 FetchContent_GetProperties(imgui_club)
 if(NOT imgui_club_POPULATED)
