@@ -49,7 +49,7 @@ if(GUINEA_PLATFORM MATCHES "sdl")
 
     get_target_property(target_type SDL2::SDL2 TYPE)
     if(target_type STREQUAL SHARED_LIBRARY)
-      # install( PROGRAMS $<TARGET_FILE:SDL2::SDL2> DESTINATION ${INSTALL_DIR}
+      # install( PROGRAMS $<TARGET_FILE:SDL2::SDL2> DESTINATION ${CMAKE_INSTALL_BINDIR}
       # COMPONENT guinea)
     endif()
   endif()

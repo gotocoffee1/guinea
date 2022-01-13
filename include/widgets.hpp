@@ -117,7 +117,7 @@ template<typename T, typename U = T, typename V = T>
 bool InputNum(const char* label, T& p_data, const U& p_step, const V& p_step_fast = std::numeric_limits<T>::max(), const char* format = nullptr, ImGuiInputTextFlags flags = ImGuiInputTextFlags_None) noexcept
 {
     T step, fast_step;
-    return InputNum(label, p_data, to_ptr(step, p_step_fast), to_ptr(fast_step, p_step_fast), format, flags);
+    return InputNum(label, p_data, to_ptr(step, p_step), to_ptr(fast_step, p_step_fast), format, flags);
 }
 
 } // namespace ImGui

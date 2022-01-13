@@ -16,6 +16,8 @@ namespace ui
 int guinea::launch(int argc, char** argv) noexcept
 {
     auto name = setup(argc, argv);
+    if (!name)
+        return shutdown();
     // Setup SDL
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0)
     {

@@ -97,6 +97,7 @@ namespace ui
 #if defined(_MSC_VER)
 #pragma warning(push)
 #pragma warning(disable : 6385)
+#pragma warning(disable : 4189)
 #endif
 #include "imgui_memory_editor/imgui_memory_editor.h"
 #if defined(_MSC_VER)
