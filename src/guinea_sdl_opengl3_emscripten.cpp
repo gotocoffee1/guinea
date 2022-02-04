@@ -134,7 +134,7 @@ void guinea::inner_loop(void* arg) noexcept
             self.done = true;
             break;
         case (SDL_WINDOWEVENT):
-            if (event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window))
+            if (event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(g_Window))
                 self.done = true;
             break;
         case (SDL_DROPTEXT):

@@ -1,5 +1,7 @@
 #pragma once
 
+#define IMGUI_DEFINE_MATH_OPERATORS
+
 namespace ImGui
 {
 extern void (*_assert_handler)(void*, const char*);

@@ -27,6 +27,12 @@ bool LoadTextureFromFile(const char* filename,
                          int* out_width,
                          int* out_height);
 
+bool LoadTextureFromMemory(const void* buffer,
+                           int size,
+                           void** out_texture,
+                           int* out_width,
+                           int* out_height);
+
 void UnLoadTexture(void* out_texture);
 
 template<typename T>

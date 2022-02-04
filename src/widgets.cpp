@@ -116,19 +116,13 @@ bool Spinner(const char* label, float radius, float thickness)
 
 namespace ImGui
 {
-// Simple helper function to load an image into a OpenGL texture with common settings
-bool LoadTextureFromFile(const char* filename,
-                         void** out_texture,
-                         int* out_width,
-                         int* out_height)
+
+static void* load_tex(stbi_uc* image_data,
+                           int out_width,
+                           int out_height)
 {
-    // Load from file
-    int image_width  = 0;
-    int image_height = 0;
-    unsigned char* image_data =
-        stbi_load(filename, &image_width, &image_height, NULL, 4);
     if (image_data == NULL)
-        return false;
+        return nullptr;
 
     // Create a OpenGL texture identifier
     GLuint image_texture;
@@ -144,19 +138,38 @@ bool LoadTextureFromFile(const char* filename,
     glTexImage2D(GL_TEXTURE_2D,
                  0,
                  GL_RGBA,
-                 image_width,
-                 image_height,
+                 out_width,
+                 out_height,
                  0,
                  GL_RGBA,
                  GL_UNSIGNED_BYTE,
                  image_data);
     stbi_image_free(image_data);
 
-    *out_texture = reinterpret_cast<void*>(static_cast<uintptr_t>(image_texture));
-    *out_width   = image_width;
-    *out_height  = image_height;
+    return reinterpret_cast<void*>(static_cast<uintptr_t>(image_texture));
+}
 
-    return true;
+bool LoadTextureFromFile(const char* filename,
+                         void** out_texture,
+                         int* out_width,
+                         int* out_height)
+{
+    auto* data = stbi_load(filename, out_width, out_height, NULL, 4);
+    *out_texture = 
+        load_tex(data, *out_width, *out_height);
+    return out_texture != nullptr;
+}
+
+bool LoadTextureFromMemory(const void* buffer,
+                           int size,
+                           void** out_texture,
+                           int* out_width,
+                           int* out_height)
+{
+    auto data = stbi_load_from_memory(static_cast<const stbi_uc*>(buffer), size, out_width, out_height, NULL, 4);
+    *out_texture = 
+        load_tex(data, *out_width, *out_height);
+    return out_texture != nullptr;
 }
 
 void UnLoadTexture(void* out_texture)
