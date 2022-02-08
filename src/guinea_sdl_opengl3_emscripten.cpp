@@ -29,7 +29,7 @@ int guinea::launch(int argc, char** argv) noexcept
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0)
     {
         failure(SDL_GetError());
-        return -1;
+        return shutdown();
     }
 
     // For the browser using Emscripten, we are going to use WebGL1 with GL ES2. See the Makefile. for requirement details.
@@ -54,7 +54,7 @@ int guinea::launch(int argc, char** argv) noexcept
     if (!g_GLContext)
     {
         failure("Failed to initialize WebGL context!");
-        return 1;
+        return shutdown();
     }
 
     // Setup Dear ImGui context

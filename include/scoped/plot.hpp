@@ -20,25 +20,11 @@ struct Plot
 {
     bool IsOpen;
 
-    Plot(const char* title_id,
-         const char* x_label      = NULL,
-         const char* y_label      = NULL,
-         const ImVec2& size       = ImVec2(-1, 0),
-         ImPlotFlags flags        = ImPlotFlags_None,
-         ImPlotAxisFlags x_flags  = ImPlotAxisFlags_None,
-         ImPlotAxisFlags y_flags  = ImPlotAxisFlags_None,
-         ImPlotAxisFlags y2_flags = ImPlotAxisFlags_NoGridLines,
-         ImPlotAxisFlags y3_flags = ImPlotAxisFlags_NoGridLines)
+    Plot(const char* title_id, const ImVec2& size = ImVec2(-1, 0), ImPlotFlags flags = ImPlotFlags_None)
     {
         IsOpen = ImPlot::BeginPlot(title_id,
-                                   x_label,
-                                   y_label,
                                    size,
-                                   flags,
-                                   x_flags,
-                                   y_flags,
-                                   y2_flags,
-                                   y3_flags);
+                                   flags);
     }
     ~Plot()
     {
@@ -54,15 +40,15 @@ struct Plot
     DELETE_MOVE_COPY(Plot);
 };
 
-struct DragDropTarget
+struct DragDropTargetPlot
 {
     bool IsOpen;
-    DragDropTarget()
+    DragDropTargetPlot()
     {
-        IsOpen = ImPlot::BeginDragDropTarget();
+        IsOpen = ImPlot::BeginDragDropTargetPlot();
     }
 
-    ~DragDropTarget()
+    ~DragDropTargetPlot()
     {
         if (IsOpen)
             ImPlot::EndDragDropTarget();
@@ -73,18 +59,62 @@ struct DragDropTarget
         return IsOpen;
     }
 
-    DELETE_MOVE_COPY(DragDropTarget);
+    DELETE_MOVE_COPY(DragDropTargetPlot);
 };
 
-struct DragDropSource
+struct DragDropTargetLegend
 {
     bool IsOpen;
-    DragDropSource(ImGuiKeyModFlags key_mods = ImGuiKeyModFlags_Ctrl, ImGuiDragDropFlags flags = 0)
+    DragDropTargetLegend()
     {
-        IsOpen = ImPlot::BeginDragDropSource(key_mods, flags);
+        IsOpen = ImPlot::BeginDragDropTargetLegend();
     }
 
-    ~DragDropSource()
+    ~DragDropTargetLegend()
+    {
+        if (IsOpen)
+            ImPlot::EndDragDropTarget();
+    }
+
+    explicit operator bool() const
+    {
+        return IsOpen;
+    }
+
+    DELETE_MOVE_COPY(DragDropTargetLegend);
+};
+
+struct DragDropTargetAxis
+{
+    bool IsOpen;
+    DragDropTargetAxis(ImAxis axis)
+    {
+        IsOpen = ImPlot::BeginDragDropTargetAxis(axis);
+    }
+
+    ~DragDropTargetAxis()
+    {
+        if (IsOpen)
+            ImPlot::EndDragDropTarget();
+    }
+
+    explicit operator bool() const
+    {
+        return IsOpen;
+    }
+
+    DELETE_MOVE_COPY(DragDropTargetAxis);
+};
+
+struct DragDropSourcePlot
+{
+    bool IsOpen;
+    DragDropSourcePlot(ImGuiDragDropFlags flags = 0)
+    {
+        IsOpen = ImPlot::BeginDragDropSourcePlot(flags);
+    }
+
+    ~DragDropSourcePlot()
     {
         if (IsOpen)
             ImPlot::EndDragDropSource();
@@ -95,7 +125,51 @@ struct DragDropSource
         return IsOpen;
     }
 
-    DELETE_MOVE_COPY(DragDropSource);
+    DELETE_MOVE_COPY(DragDropSourcePlot);
+};
+
+struct DragDropSourceAxis
+{
+    bool IsOpen;
+    DragDropSourceAxis(ImAxis axis, ImGuiDragDropFlags flags = 0)
+    {
+        IsOpen = ImPlot::BeginDragDropSourceAxis(axis, flags);
+    }
+
+    ~DragDropSourceAxis()
+    {
+        if (IsOpen)
+            ImPlot::EndDragDropSource();
+    }
+
+    explicit operator bool() const
+    {
+        return IsOpen;
+    }
+
+    DELETE_MOVE_COPY(DragDropSourceAxis);
+};
+
+struct DragDropSourceItem
+{
+    bool IsOpen;
+    DragDropSourceItem(const char* label_id, ImGuiDragDropFlags flags = 0)
+    {
+        IsOpen = ImPlot::BeginDragDropSourceItem(label_id, flags);
+    }
+
+    ~DragDropSourceItem()
+    {
+        if (IsOpen)
+            ImPlot::EndDragDropSource();
+    }
+
+    explicit operator bool() const
+    {
+        return IsOpen;
+    }
+
+    DELETE_MOVE_COPY(DragDropSourceItem);
 };
 
 struct LegendPopup

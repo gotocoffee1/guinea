@@ -22,7 +22,7 @@ int guinea::launch(int argc, char** argv) noexcept
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0)
     {
         failure(SDL_GetError());
-        return -1;
+        return shutdown();
     }
 
     // Setup window
