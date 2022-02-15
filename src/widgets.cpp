@@ -112,7 +112,9 @@ bool Spinner(const char* label, float radius, float thickness)
 }
 
 } // namespace ImGui
-#include <SDL_opengl.h>
+
+
+//#include <SDL_opengl.h>
 
 namespace ImGui
 {
@@ -123,7 +125,7 @@ static void* load_tex(stbi_uc* image_data,
 {
     if (image_data == NULL)
         return nullptr;
-
+/*
     // Create a OpenGL texture identifier
     GLuint image_texture;
     glGenTextures(1, &image_texture);
@@ -146,7 +148,7 @@ static void* load_tex(stbi_uc* image_data,
                  image_data);
     stbi_image_free(image_data);
 
-    return reinterpret_cast<void*>(static_cast<uintptr_t>(image_texture));
+    return reinterpret_cast<void*>(static_cast<uintptr_t>(image_texture));*/
 }
 
 bool LoadTextureFromFile(const char* filename,
@@ -176,9 +178,10 @@ void UnLoadTexture(void* out_texture)
 {
     if (out_texture == nullptr)
         return;
-    glBindTexture(GL_TEXTURE_2D, 0);
+    /*glBindTexture(GL_TEXTURE_2D, 0);
     auto image_texture = static_cast<GLuint>(reinterpret_cast<uintptr_t>(out_texture));
-    glDeleteTextures(1, &image_texture);
+    glDeleteTextures(1, &image_texture);*/
 }
 
 } // namespace ImGui
+

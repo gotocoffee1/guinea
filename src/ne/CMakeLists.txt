@@ -8,10 +8,14 @@ if(NOT imgui-node-editor_POPULATED)
   FetchContent_Populate(imgui-node-editor)
 endif()
 
-target_include_directories(guinea PUBLIC $<BUILD_INTERFACE:${imgui-node-editor_SOURCE_DIR}>)
+add_library(imgui_ne STATIC)
+
+target_include_directories(imgui_ne PUBLIC $<BUILD_INTERFACE:${imgui-node-editor_SOURCE_DIR}>)
 target_sources(
-  guinea
+  imgui_ne
   PRIVATE "${imgui-node-editor_SOURCE_DIR}/crude_json.cpp"
           "${imgui-node-editor_SOURCE_DIR}/imgui_canvas.cpp"
           "${imgui-node-editor_SOURCE_DIR}/imgui_node_editor.cpp"
           "${imgui-node-editor_SOURCE_DIR}/imgui_node_editor_api.cpp")
+
+target_link_libraries(imgui_ne PUBLIC imgui)

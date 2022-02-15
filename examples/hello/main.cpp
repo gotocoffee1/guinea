@@ -36,10 +36,12 @@ struct app final : ui::guinea
             }
             ui::TextUnformatted(drop);
         }
+        ui::ShowAboutWindow();
+        ui::ShowMetricsWindow();
     }
 };
 
-int main()
+int main(int argc, char** argv)
 {
-    return app{}.launch();
+    return app{}.launch(argc, argv);
 }

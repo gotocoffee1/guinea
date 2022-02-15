@@ -3,20 +3,27 @@ project(guinea)
 
 add_library(guinea STATIC)
 
+
+add_library(guinea_base INTERFACE)
+target_compile_features(guinea_base INTERFACE cxx_std_17)
+
 add_library(guinea::guinea ALIAS guinea)
 
-target_compile_features(guinea PUBLIC cxx_std_17)
 
 target_include_directories(guinea PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+target_include_directories(guinea_base INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 
 if(MSVC)
   target_compile_definitions(guinea PUBLIC _CRT_SECURE_NO_WARNINGS)
 endif()
 
-set(IMGUI_USER_CONFIG
-    \"config.hpp\"
-    CACHE STRING "Imgui config file")
-target_compile_definitions(guinea PUBLIC IMGUI_USER_CONFIG=${IMGUI_USER_CONFIG})
+option(BUILD_GUINEA_EXAMPLES "Build guinea examples" OFF)
+option(BUILD_GUINEA_TESTS "Build guinea tests" OFF)
+if (EMSCRIPTEN)
+  option(BUILD_GUINEA_BACKEND_STATIC "Build guinea backend static" ON)
+else()
+  option(BUILD_GUINEA_BACKEND_STATIC "Build guinea backend static" OFF)
+endif()
 
 set(GUINEA_PLATFORM
     "sdl"
@@ -25,44 +32,54 @@ set(GUINEA_PLATFORM
 if(EMSCRIPTEN)
   set(GUINEA_RENDERER
       "opengl3"
-      CACHE STRING "Platform")
+      CACHE STRING "Renderer")
 else()
   set(GUINEA_RENDERER
       "opengl2"
-      CACHE STRING "Platform")
+      CACHE STRING "Renderer")
 endif()
 
-option(BUILD_GUINEA_EXAMPLES "Build guinea examples" OFF)
-option(BUILD_GUINEA_TESTS "Build guinea tests" OFF)
+find_package(SDL2 CONFIG)
+set(OpenGL_GL_PREFERENCE GLVND)
+find_package(OpenGL)
 
-target_compile_definitions(guinea PUBLIC GUINEA_PLATFORM_${GUINEA_PLATFORM}
-                                         GUINEA_RENDERER_${GUINEA_RENDERER})
-
-if(GUINEA_PLATFORM MATCHES "sdl")
-  if(EMSCRIPTEN)
-    target_compile_options(guinea PUBLIC "SHELL:-s USE_SDL=2")
-    target_link_options(guinea PUBLIC "SHELL:-s USE_SDL=2")
-  else()
-
-    find_package(SDL2 CONFIG REQUIRED)
-    target_link_libraries(guinea PRIVATE SDL2::SDL2)
-
-    get_target_property(target_type SDL2::SDL2 TYPE)
-    if(target_type STREQUAL SHARED_LIBRARY)
-      # install( PROGRAMS $<TARGET_FILE:SDL2::SDL2> DESTINATION ${CMAKE_INSTALL_BINDIR}
-      # COMPONENT guinea)
-    endif()
-  endif()
-endif()
-
-if(GUINEA_RENDERER MATCHES "opengl." AND NOT EMSCRIPTEN)
-  set(OpenGL_GL_PREFERENCE GLVND)
-  find_package(OpenGL REQUIRED)
-  target_link_libraries(guinea PRIVATE ${OPENGL_LIBRARIES})
-endif()
+include(GNUInstallDirs)
 
 add_subdirectory(src)
+
+target_link_libraries(guinea_base INTERFACE imgui)
+target_link_libraries(guinea PUBLIC guinea_base implot imgui_ne imgui_md)
+
+if (BUILD_GUINEA_BACKEND_STATIC)
+  target_link_libraries(guinea PRIVATE guinea_${GUINEA_PLATFORM}_${GUINEA_RENDERER})
+endif()
+
+target_compile_definitions(guinea PUBLIC DEFAULT_GUINEA_BACKEND=\"guinea_${GUINEA_PLATFORM}_${GUINEA_RENDERER}\")
 
 if(BUILD_GUINEA_EXAMPLES)
   add_subdirectory(examples)
 endif()
+
+install(
+  TARGETS guinea guinea_base imgui implot imgui_ne imgui_md
+  EXPORT guineaTargets
+  RUNTIME #
+          COMPONENT guinea_Runtime
+  LIBRARY #
+          COMPONENT guinea_Runtime NAMELINK_COMPONENT guinea_Development
+  ARCHIVE #
+          COMPONENT guinea_Development
+  INCLUDES #
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+
+# Allow package maintainers to freely override the path for the configs
+set(guinea_INSTALL_CMAKEDIR
+    "${CMAKE_INSTALL_DATADIR}/guinea"
+    CACHE PATH "CMake package config location relative to the install prefix")
+mark_as_advanced(guinea_INSTALL_CMAKEDIR)
+
+install(
+  EXPORT guineaTargets
+  NAMESPACE guinea::
+  DESTINATION "${guinea_INSTALL_CMAKEDIR}"
+  COMPONENT guinea_Development)

@@ -1,4 +1,4 @@
-#include "guinea.hpp"
+#include "guinea_impl.hpp"
 
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
@@ -9,6 +9,7 @@
 #include <emscripten.h>
 #include <emscripten/html5.h>
 #include <cstring>
+#include <string>
 
 namespace ui
 {
@@ -17,19 +18,15 @@ namespace ui
 static SDL_Window* g_Window      = NULL;
 static SDL_GLContext g_GLContext = NULL;
 
-// For clarity, our main loop code is declared at the end.
-static void main_loop(void*);
-
-int guinea::launch(int argc, char** argv) noexcept
+extern "C" EXPORT void loop(ui::guinea& self, ImGuiContext* ctx) noexcept
 {
-    auto name = setup(argc, argv);
-    if (!name)
-        return shutdown();
+    ImGui::SetCurrentContext(ctx);
     // Setup SDL
+    SDL_SetMainReady();
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0)
     {
-        failure(SDL_GetError());
-        return shutdown();
+        self.failure(SDL_GetError());
+        return;
     }
 
     // For the browser using Emscripten, we are going to use WebGL1 with GL ES2. See the Makefile. for requirement details.
@@ -49,41 +46,31 @@ int guinea::launch(int argc, char** argv) noexcept
     SDL_DisplayMode current;
     SDL_GetCurrentDisplayMode(0, &current);
     SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_MAXIMIZED);
-    g_Window                     = SDL_CreateWindow(name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
+    g_Window                     = SDL_CreateWindow(self.title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, static_cast<int>(self.resolution.x), static_cast<int>(self.resolution.y), window_flags);
     g_GLContext                  = SDL_GL_CreateContext(g_Window);
     if (!g_GLContext)
     {
-        failure("Failed to initialize WebGL context!");
-        return shutdown();
+        self.failure("Failed to initialize WebGL context!");
+        return;
     }
-
-    // Setup Dear ImGui context
-    IMGUI_CHECKVERSION();
-    create_context();
-    ImGuiIO& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; // Enable Docking
 
     // For an Emscripten build we are disabling file-system access, so let's not attempt to do a fopen() of the imgui.ini file.
     // You may manually call LoadIniSettingsFromMemory() to load settings from your own storage.
-    io.IniFilename = NULL;
+    ImGuiIO& io  = ImGui::GetIO();
 
-    // Setup Dear ImGui style
-    //ImGui::StyleColorsDark();
-    //ImGui::StyleColorsClassic();
+    io.IniFilename = NULL;
 
     // Setup Platform/Renderer bindings
     ImGui_ImplSDL2_InitForOpenGL(g_Window, g_GLContext);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    load();
+    self.load();
 
-    done      = false;
-    frame_cnt = 0;
+    self.done      = false;
+    self.frame_cnt = 0;
 
     emscripten_set_beforeunload_callback(
-        this,
+        &self,
         [](int, const void*, void* arg) -> const char*
         {
             guinea& self = *static_cast<guinea*>(arg);
@@ -91,7 +78,6 @@ int guinea::launch(int argc, char** argv) noexcept
             self.unload();
             ImGui_ImplOpenGL3_Shutdown();
             ImGui_ImplSDL2_Shutdown();
-            self.destroy_context();
             SDL_GL_DeleteContext(g_GLContext);
             SDL_DestroyWindow(g_Window);
             SDL_Quit();
@@ -108,18 +94,15 @@ int guinea::launch(int argc, char** argv) noexcept
                                         self.frame_cnt = 0;
                                     return EM_TRUE;
                                 },
-                                1000.0 / 30.0,
-                                this);
-    emscripten_set_main_loop_arg(inner_loop, this, 0, true);
-    return EXIT_SUCCESS;
+                                1000.0 / self.fps,
+                                &self);
+    emscripten_set_main_loop_arg(guinea::inner_loop, &self, 0, true);
 }
 
 void guinea::inner_loop(void* arg) noexcept
 {
     ImGuiIO& io  = ImGui::GetIO();
     guinea& self = *static_cast<guinea*>(arg);
-
-    ImVec4 clear_color = ImColor(62, 62, 66);
 
     self.done = false;
     std::string dropfile;
@@ -153,14 +136,17 @@ void guinea::inner_loop(void* arg) noexcept
         ImGui_ImplSDL2_NewFrame(g_Window);
         ImGui::NewFrame();
         if (droptype)
-            if (GUI(DragDropSource, ImGuiDragDropFlags_SourceExtern))
+            if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceExtern))
+            {
                 ImGui::SetDragDropPayload(droptype, &dropfile[0], std::size(dropfile));
+                ImGui::EndDragDropSource();
+            }
         self.render();
         // Rendering
         ImGui::Render();
         SDL_GL_MakeCurrent(g_Window, g_GLContext);
         glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
-        glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+        glClearColor(self.clear_color.x, self.clear_color.y, self.clear_color.z, self.clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         SDL_GL_SwapWindow(g_Window);

@@ -7,4 +7,9 @@ FetchContent_GetProperties(imgui_markdown)
 if(NOT imgui_markdown_POPULATED)
   FetchContent_Populate(imgui_markdown)
 endif()
-target_include_directories(guinea PUBLIC $<BUILD_INTERFACE:${imgui_markdown_SOURCE_DIR}>)
+
+add_library(imgui_md INTERFACE)
+
+target_include_directories(imgui_md INTERFACE $<BUILD_INTERFACE:${imgui_markdown_SOURCE_DIR}>)
+
+target_link_libraries(imgui_md INTERFACE imgui)

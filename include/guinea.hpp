@@ -20,63 +20,17 @@
 #include "scoped/ui.hpp"
 #include "widgets.hpp"
 
-#ifndef UI_EXTERN_FILE
-#define UI_EXTERN_FILE "EXTERN_FILE"
+#ifdef BUILD_GUINEA_BACKEND_STATIC
+#define EXPORT
+#else
+#if defined(_MSC_VER)
+#define EXPORT __declspec(dllimport)
+#else
+#define EXPORT
+#endif
 #endif
 
-#ifndef UI_EXTERN_TEXT
-#define UI_EXTERN_TEXT "EXTERN_TEXT"
-#endif
-
-namespace ui
-{
-class guinea
-{
-  protected:
-    virtual const char* setup(int, char**) noexcept
-    {
-        return "";
-    }
-    virtual void load(void) noexcept
-    {
-    }
-    virtual void render() noexcept
-    {
-    }
-    virtual bool update(bool&) noexcept
-    {
-      return false;
-    }
-    virtual void unload(void) noexcept
-    {
-    }
-    virtual int shutdown() noexcept
-    {
-        return EXIT_SUCCESS;
-    }
-    virtual void failure(const char*) noexcept
-    {
-    }
-    virtual ~guinea() noexcept = 0;
-
-  public:
-    int launch(int, char**) noexcept;
-
-    int launch() noexcept
-    {
-        return launch(0, nullptr);
-    }
-
-  private:
-#ifdef __EMSCRIPTEN__
-    static void inner_loop(void*) noexcept;
-    uint8_t frame_cnt;
-    bool done;
-#endif
-    void create_context() noexcept;
-    void destroy_context() noexcept;
-};
-} // namespace ui
+#include "guinea_base.hpp"
 
 namespace ui
 {
@@ -103,5 +57,5 @@ namespace ui
 #if defined(_MSC_VER)
 #pragma warning(pop)
 #endif
-}// namespace ui
+} // namespace ui
 #endif
