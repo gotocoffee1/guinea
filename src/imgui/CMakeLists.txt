@@ -19,7 +19,9 @@ target_sources(
           "${imgui_SOURCE_DIR}/imgui_demo.cpp"
           "${imgui_SOURCE_DIR}/misc/cpp/imgui_stdlib.cpp")
 
-target_include_directories(imgui PUBLIC $<BUILD_INTERFACE:${imgui_SOURCE_DIR}> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+target_include_directories(
+  imgui PUBLIC $<BUILD_INTERFACE:${imgui_SOURCE_DIR}>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
 set(IMGUI_USER_CONFIG
     \"imgui_config.hpp\"
@@ -29,7 +31,7 @@ target_compile_definitions(imgui PUBLIC IMGUI_USER_CONFIG=${IMGUI_USER_CONFIG})
 
 function(backend type name)
   set(tar imgui_${type}_${name})
-  add_library(${tar} STATIC
+  add_library(${tar} STATIC EXCLUDE_FROM_ALL
               "${imgui_SOURCE_DIR}/backends/imgui_impl_${name}.cpp")
   target_include_directories(
     ${tar} PUBLIC $<BUILD_INTERFACE:${imgui_SOURCE_DIR}/backends>)
@@ -38,6 +40,7 @@ function(backend type name)
   install(
     TARGETS ${tar}
     EXPORT guineaTargets
+    OPTIONAL
     RUNTIME #
             COMPONENT guinea_Runtime
     LIBRARY #
@@ -48,14 +51,22 @@ function(backend type name)
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 endfunction()
 
-if(OPENGL_FOUND)
-  backend("renderer" opengl2)
-  backend("renderer" opengl3)
-  target_link_libraries(imgui_renderer_opengl2 PUBLIC ${OPENGL_LIBRARIES})
-  target_link_libraries(imgui_renderer_opengl3 PUBLIC ${OPENGL_LIBRARIES})
+if(NOT EMSCRIPTEN)
+  find_package(SDL2 CONFIG)
+  set(OpenGL_GL_PREFERENCE GLVND)
+  find_package(OpenGL)
 endif()
 
-if(TARGET SDL2::SDL2)
+if(OPENGL_FOUND OR EMSCRIPTEN)
+  backend("renderer" opengl2)
+  backend("renderer" opengl3)
+  if(NOT EMSCRIPTEN)
+    target_link_libraries(imgui_renderer_opengl2 PUBLIC ${OPENGL_LIBRARIES})
+    target_link_libraries(imgui_renderer_opengl3 PUBLIC ${OPENGL_LIBRARIES})
+  endif()
+endif()
+
+if(TARGET SDL2::SDL2 OR EMSCRIPTEN)
   backend("platform" sdl)
 
   if(EMSCRIPTEN)

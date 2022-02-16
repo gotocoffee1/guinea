@@ -9,18 +9,17 @@ add_subdirectory(plot)
 target_sources(guinea PRIVATE "${CMAKE_CURRENT_LIST_DIR}/guinea.cpp"
                               "${CMAKE_CURRENT_LIST_DIR}/widgets.cpp")
 
-function(lib platform renderer)
+function(guinea_backend platform renderer)
   if(TARGET imgui_platform_${platform} AND TARGET imgui_renderer_${renderer})
     if(EMSCRIPTEN)
       set(extra _emscripten)
     endif()
     set(tar guinea_${platform}_${renderer})
-    MESSAGE(STATUS ${tar})
     if(BUILD_GUINEA_BACKEND_STATIC)
-      add_library(${tar} STATIC)
+      add_library(${tar} STATIC EXCLUDE_FROM_ALL )
       target_compile_definitions(${tar} PUBLIC BUILD_GUINEA_BACKEND_STATIC)
     else()
-      add_library(${tar} SHARED)
+      add_library(${tar} SHARED EXCLUDE_FROM_ALL )
     endif()
     target_sources(${tar} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/${tar}${extra}.cpp)
     target_link_libraries(${tar} PRIVATE imgui_platform_${platform}
@@ -29,6 +28,7 @@ function(lib platform renderer)
     install(
       TARGETS ${tar}
       EXPORT guineaTargets
+      OPTIONAL
       RUNTIME #
               COMPONENT guinea_Runtime
       LIBRARY #
@@ -40,10 +40,10 @@ function(lib platform renderer)
   endif()
 endfunction()
 
-lib(sdl opengl3)
+guinea_backend(sdl opengl3)
 
 if(NOT EMSCRIPTEN)
-  lib(sdl opengl2)
-  lib(sdl dx11)
-  lib(sdl dx12)
+  guinea_backend(sdl opengl2)
+  guinea_backend(sdl dx11)
+  guinea_backend(sdl dx12)
 endif()
