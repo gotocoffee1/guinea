@@ -1,4 +1,5 @@
 #include "widgets.hpp"
+#include "guinea_base.hpp"
 
 #include "imgui_internal.h"
 
@@ -113,75 +114,73 @@ bool Spinner(const char* label, float radius, float thickness)
 
 } // namespace ImGui
 
+extern "C" ImTextureID load_texture(const unsigned char* image_data, int out_width, int out_height) noexcept;
+extern "C" void unload_texture(ImTextureID out_texture) noexcept;
 
-//#include <SDL_opengl.h>
+#ifndef BUILD_GUINEA_BACKEND_STATIC
+
+struct ui::guinea::texture
+{
+    static ImTextureID load(const unsigned char* image_data, int width, int height) noexcept
+    {
+        if (auto* ctx = ui::ctx::get_current(); ctx->load_texture_ptr)
+            return static_cast<decltype(&load_texture)>(ctx->load_texture_ptr)(image_data, width, height);
+        return nullptr;
+    }
+
+    static void unload(ImTextureID texture) noexcept
+    {
+        if (auto* ctx = ui::ctx::get_current(); ctx->unload_texture_ptr)
+            return static_cast<decltype(&unload_texture)>(ctx->unload_texture_ptr)(texture);
+    }
+};
+
+#endif
 
 namespace ImGui
 {
+img_data LoadImageFromFile(const char* filename,
+                           int* out_width,
+                           int* out_height) noexcept
+{
+    return stbi_load(filename, out_width, out_height, NULL, 4);
+}
 
-static void* load_tex(stbi_uc* image_data,
-                           int out_width,
-                           int out_height)
+img_data LoadImageFromMemory(const void* buffer,
+                             int size,
+                             int* out_width,
+                             int* out_height) noexcept
+{
+    return stbi_load_from_memory(static_cast<const stbi_uc*>(buffer), size, out_width, out_height, NULL, 4);
+}
+
+void UnLoadImage(img_data img) noexcept
+{
+    if (img == nullptr)
+        return;
+    stbi_image_free(img);
+}
+
+ImTextureID LoadTexture(const img_data image_data, int width, int height) noexcept
 {
     if (image_data == NULL)
         return nullptr;
-/*
-    // Create a OpenGL texture identifier
-    GLuint image_texture;
-    glGenTextures(1, &image_texture);
-    glBindTexture(GL_TEXTURE_2D, image_texture);
-
-    // Setup filtering parameters for display
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    // Upload pixels into texture
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-    glTexImage2D(GL_TEXTURE_2D,
-                 0,
-                 GL_RGBA,
-                 out_width,
-                 out_height,
-                 0,
-                 GL_RGBA,
-                 GL_UNSIGNED_BYTE,
-                 image_data);
-    stbi_image_free(image_data);
-
-    return reinterpret_cast<void*>(static_cast<uintptr_t>(image_texture));*/
+#ifndef BUILD_GUINEA_BACKEND_STATIC
+    return ui::guinea::texture::load(image_data, width, height);
+#else
+    return load_texture(image_data, width, height);
+#endif
 }
 
-bool LoadTextureFromFile(const char* filename,
-                         void** out_texture,
-                         int* out_width,
-                         int* out_height)
+void UnLoadTexture(ImTextureID texture) noexcept
 {
-    auto* data = stbi_load(filename, out_width, out_height, NULL, 4);
-    *out_texture = 
-        load_tex(data, *out_width, *out_height);
-    return out_texture != nullptr;
-}
-
-bool LoadTextureFromMemory(const void* buffer,
-                           int size,
-                           void** out_texture,
-                           int* out_width,
-                           int* out_height)
-{
-    auto data = stbi_load_from_memory(static_cast<const stbi_uc*>(buffer), size, out_width, out_height, NULL, 4);
-    *out_texture = 
-        load_tex(data, *out_width, *out_height);
-    return out_texture != nullptr;
-}
-
-void UnLoadTexture(void* out_texture)
-{
-    if (out_texture == nullptr)
+    if (texture == nullptr)
         return;
-    /*glBindTexture(GL_TEXTURE_2D, 0);
-    auto image_texture = static_cast<GLuint>(reinterpret_cast<uintptr_t>(out_texture));
-    glDeleteTextures(1, &image_texture);*/
+#ifndef BUILD_GUINEA_BACKEND_STATIC
+    return ui::guinea::texture::unload(texture);
+#else
+    unload_texture(texture);
+#endif
 }
 
 } // namespace ImGui
-

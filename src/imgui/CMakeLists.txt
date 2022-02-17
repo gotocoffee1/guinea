@@ -24,7 +24,7 @@ target_include_directories(
                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
 set(IMGUI_USER_CONFIG
-    \"imgui_config.hpp\"
+    \"guinea_config.hpp\"
     CACHE STRING "Imgui config file")
 
 target_compile_definitions(imgui PUBLIC IMGUI_USER_CONFIG=${IMGUI_USER_CONFIG})

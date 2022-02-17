@@ -12,20 +12,19 @@
 
 namespace ui
 {
-class guinea;
-}
-
-extern "C" EXPORT void loop(ui::guinea& self, ImGuiContext* ctx) noexcept;
-
-namespace ui
-{
 class guinea
 {
   public:
-    const char* title   = "";
-    ImVec4 clear_color  = ImColor(62, 62, 66);
-    int fps             = 30;
-    ImVec2 resolution   = {1280, 720};
+    const char* title  = "";
+    ImVec4 clear_color = ImColor(62, 62, 66);
+    int fps            = 30;
+    ImVec2 resolution  = {1280, 720};
+
+    guinea() noexcept = default;
+    guinea(guinea&&)  = delete;                /* Move not allowed */
+    guinea& operator=(guinea&&) = delete;      /* "" */
+    guinea(const guinea&)       = delete;      /* Copy not allowed */
+    guinea& operator=(const guinea&) = delete; /* "" */
 
   protected:
     virtual const char* setup(int, char**) noexcept;
@@ -49,8 +48,6 @@ class guinea
 
     virtual ~guinea() noexcept = 0;
 
-    friend void ::loop(guinea& self, ImGuiContext* ctx) noexcept;
-
   public:
     int launch(int, char**) noexcept;
 
@@ -59,11 +56,60 @@ class guinea
         return launch(0, nullptr);
     }
 
+    struct impl;
+    struct texture;
+#ifdef USE_GUINEA_ASSERT
+    friend void ImGui::guinea_assert(const char* msg);
+#endif
+#ifndef BUILD_GUINEA_BACKEND_STATIC
+  private:
+    void* load_texture_ptr     = nullptr;
+    void* unload_texture_ptr = nullptr;
+#endif
+
   private:
 #ifdef __EMSCRIPTEN__
-    static void inner_loop(void*) noexcept;
-    int  frame_cnt;
+    int frame_cnt;
     bool done;
 #endif
 };
+
 } // namespace ui
+
+namespace ui
+{
+
+struct ctx
+{
+    static inline guinea* _guinea_context = nullptr;
+
+    static guinea* get_current()
+    {
+        if (!_guinea_context && ImGui::GetCurrentContext())
+            _guinea_context = static_cast<guinea*>(ImGui::GetIO().UserData);
+        return _guinea_context;
+    }
+    static void set_current(guinea* ctx)
+    {
+        if (ImGui::GetCurrentContext())
+            ImGui::GetIO().UserData = ctx;
+        _guinea_context = ctx;
+    }
+};
+
+} // namespace ui
+
+#ifdef USE_GUINEA_ASSERT
+#include <cassert>
+
+namespace ImGui
+{
+inline void guinea_assert(const char* msg)
+{
+    if (auto* ctx = ui::ctx::get_current())
+        ctx->failure(msg);
+    else
+        assert(false && msg);
+}
+} // namespace ImGui
+#endif

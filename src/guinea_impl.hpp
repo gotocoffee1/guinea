@@ -5,17 +5,29 @@
 #else
 #if defined(_MSC_VER)
 #define EXPORT __declspec(dllexport)
-#else 
+#else
 #define EXPORT __attribute__((visibility("default")))
 #endif
 #endif
 
 #include "guinea_base.hpp"
 
-#ifndef BUILD_GUINEA_BACKEND_STATIC
-namespace ImGui
+#include <chrono>
+#include <thread>
+
+template<typename F>
+void main_loop(int fps, F&& func) noexcept
 {
-void (*_assert_handler)(void*, const char*) = nullptr;
-void* _assert_handler_obj                   = nullptr;
-} // namespace ImGui
-#endif
+    using namespace std::chrono;
+    using Framerate = duration<double, std::ratio<1, 1>>;
+    auto step       = Framerate{1} / fps;
+    auto next       = steady_clock::now() + step;
+    // Main loop
+    for (;;)
+    {
+        if (func())
+            break;
+        std::this_thread::sleep_until(next);
+        next += step;
+    }
+}

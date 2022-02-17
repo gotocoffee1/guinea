@@ -20,15 +20,6 @@
 #include "scoped/ui.hpp"
 #include "widgets.hpp"
 
-#ifdef BUILD_GUINEA_BACKEND_STATIC
-#define EXPORT
-#else
-#if defined(_MSC_VER)
-#define EXPORT __declspec(dllimport)
-#else
-#define EXPORT
-#endif
-#endif
 
 #include "guinea_base.hpp"
 

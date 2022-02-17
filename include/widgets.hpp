@@ -4,7 +4,6 @@
 #define _WIDGET_HPP_
 
 #include "imgui.h"
-#include <optional>
 #include <string_view>
 
 namespace ImGui
@@ -21,20 +20,179 @@ bool BufferingBar(const char* label,
 bool Spinner(const char* label,
              float radius    = 6,
              float thickness = 3);
+} // namespace ImGui
 
-bool LoadTextureFromFile(const char* filename,
-                         void** out_texture,
-                         int* out_width,
-                         int* out_height);
+namespace ImGui
+{
+using img_data = unsigned char*;
 
-bool LoadTextureFromMemory(const void* buffer,
-                           int size,
-                           void** out_texture,
+img_data LoadImageFromFile(const char* filename,
                            int* out_width,
-                           int* out_height);
+                           int* out_height) noexcept;
+img_data LoadImageFromMemory(const void* buffer,
+                             int size,
+                             int* out_width,
+                             int* out_height) noexcept;
 
-void UnLoadTexture(void* out_texture);
+void UnLoadImage(img_data img) noexcept;
 
+ImTextureID LoadTexture(const img_data image_data, int width, int height) noexcept;
+void UnLoadTexture(ImTextureID texture) noexcept;
+
+struct Img
+{
+    Img(img_data data, int width, int height) noexcept
+        : _data{data}, _width{width}, _height{height}
+    {
+    }
+
+    explicit Img(const char* filename) noexcept
+    {
+        _data = LoadImageFromFile(filename, &_width, &_height);
+    }
+
+    Img(const void* buffer, int size) noexcept
+    {
+        _data = LoadImageFromMemory(buffer, size, &_width, &_height);
+    }
+
+    // TODO
+    Img(const Img&) noexcept = delete;
+    Img& operator=(Img const&) noexcept = delete;
+
+    Img(Img&& other) noexcept
+        : _data{other._data}, _width{other._width}, _height{other._height}
+    {
+        other._data = nullptr;
+    }
+
+    Img& operator=(Img&& other) noexcept
+    {
+        if (&other != this)
+        {
+            _data   = other._data;
+            _width  = other._width;
+            _height = other._height;
+
+            other._data = nullptr;
+        }
+        return *this;
+    }
+
+    ~Img() noexcept
+    {
+        UnLoadImage(_data);
+    }
+
+    ImVec2 size() const noexcept
+    {
+        return ImVec2{static_cast<float>(_width), static_cast<float>(_height)};
+    }
+
+    explicit operator bool() const noexcept
+    {
+        return _data != nullptr;
+    }
+
+    int width() const noexcept
+    {
+        return _width;
+    }
+
+    int height() const noexcept
+    {
+        return _height;
+    }
+
+    const img_data data() const noexcept
+    {
+        return _data;
+    }
+
+  private:
+    img_data _data;
+    int _width;
+    int _height;
+};
+
+struct Texture
+{
+    Texture(ImTextureID id, int width, int height) noexcept
+        : _id{id}, _width{width}, _height{height}
+    {
+    }
+
+    explicit Texture(const Img& img) noexcept
+        : _id{LoadTexture(img.data(), img.width(), img.height())}, _width{img.width()}, _height{img.height()}
+    {
+    }
+
+    Texture(const Texture&) noexcept = delete;
+    Texture& operator=(Texture const&) noexcept = delete;
+
+    Texture(Texture&& other) noexcept
+        : _id{other._id}, _width{other._width}, _height{other._height}
+    {
+        other._id = nullptr;
+    }
+
+    Texture& operator=(Texture&& other) noexcept
+    {
+        if (&other != this)
+        {
+            _id     = other._id;
+            _width  = other._width;
+            _height = other._height;
+
+            other._id = nullptr;
+        }
+        return *this;
+    }
+
+    ~Texture() noexcept
+    {
+        UnLoadTexture(_id);
+    }
+
+    ImVec2 size() const noexcept
+    {
+        return ImVec2{static_cast<float>(_width), static_cast<float>(_height)};
+    }
+
+    explicit operator ImTextureID() const noexcept
+    {
+        return _id;
+    }
+
+    explicit operator bool() const noexcept
+    {
+        return _id != nullptr;
+    }
+
+    ImTextureID id() const noexcept
+    {
+        return _id;
+    }
+
+    int width() const noexcept
+    {
+        return _width;
+    }
+
+    int height() const noexcept
+    {
+        return _height;
+    }
+
+  private:
+    ImTextureID _id;
+    int _width;
+    int _height;
+};
+} // namespace ImGui
+
+namespace ImGui
+{
 template<typename T>
 constexpr ImGuiDataType map_imgui_datatype() noexcept
 {
