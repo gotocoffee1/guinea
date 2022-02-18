@@ -10,12 +10,14 @@
 #define UI_EXTERN_TEXT "EXTERN_TEXT"
 #endif
 
+#include <string>
+
 namespace ui
 {
 class guinea
 {
   public:
-    const char* title  = "";
+    std::string title  = "";
     ImVec4 clear_color = ImColor(62, 62, 66);
     int fps            = 30;
     ImVec2 resolution  = {1280, 720};

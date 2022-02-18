@@ -39,6 +39,10 @@ else()
       CACHE STRING "Renderer")
 endif()
 
+set(DEFAULT_GUINEA_BACKEND
+    "guinea_${GUINEA_PLATFORM}_${GUINEA_RENDERER}"
+    CACHE INTERNAL "default backend")
+
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
 
@@ -48,16 +52,13 @@ target_link_libraries(guinea_base INTERFACE imgui)
 target_link_libraries(guinea PUBLIC guinea_base implot imgui_ne imgui_md)
 
 if(BUILD_GUINEA_BACKEND_STATIC)
-  target_link_libraries(guinea
-                        PRIVATE guinea_${GUINEA_PLATFORM}_${GUINEA_RENDERER})
+  target_link_libraries(guinea PRIVATE ${DEFAULT_GUINEA_BACKEND})
 else()
-  add_dependencies(guinea guinea_${GUINEA_PLATFORM}_${GUINEA_RENDERER})
+  add_dependencies(guinea ${DEFAULT_GUINEA_BACKEND})
 endif()
 
 target_compile_definitions(
-  guinea
-  PUBLIC DEFAULT_GUINEA_BACKEND=\"guinea_${GUINEA_PLATFORM}_${GUINEA_RENDERER}\"
-)
+  guinea PUBLIC DEFAULT_GUINEA_BACKEND=\"${DEFAULT_GUINEA_BACKEND}\")
 
 if(BUILD_GUINEA_EXAMPLES)
   add_subdirectory(examples)

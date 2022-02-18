@@ -40,12 +40,12 @@ struct ui::guinea::impl
 
         // Create window with graphics context
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24); 
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
         SDL_DisplayMode current;
         SDL_GetCurrentDisplayMode(0, &current);
         SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_MAXIMIZED);
-        g_Window                     = SDL_CreateWindow(self.title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, static_cast<int>(self.resolution.x), static_cast<int>(self.resolution.y), window_flags);
+        g_Window                     = SDL_CreateWindow(self.title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, static_cast<int>(self.resolution.x), static_cast<int>(self.resolution.y), window_flags);
         g_GLContext                  = SDL_GL_CreateContext(g_Window);
         if (!g_GLContext)
         {
