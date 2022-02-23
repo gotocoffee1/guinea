@@ -143,7 +143,7 @@ img_data LoadImageFromFile(const char* filename,
                            int* out_width,
                            int* out_height) noexcept
 {
-    return stbi_load(filename, out_width, out_height, NULL, 4);
+    return stbi_load(filename, out_width, out_height, NULL, Img::comp);
 }
 
 img_data LoadImageFromMemory(const void* buffer,
@@ -151,7 +151,20 @@ img_data LoadImageFromMemory(const void* buffer,
                              int* out_width,
                              int* out_height) noexcept
 {
-    return stbi_load_from_memory(static_cast<const stbi_uc*>(buffer), size, out_width, out_height, NULL, 4);
+    return stbi_load_from_memory(static_cast<const stbi_uc*>(buffer), size, out_width, out_height, NULL, Img::comp);
+}
+
+img_data CopyImage(const img_data img,
+                   int out_width,
+                   int out_height) noexcept
+{
+    if (!img)
+        return nullptr;
+    auto size = sizeof(*img) * out_width * out_height * Img::comp;
+    auto* p   = static_cast<stbi_uc*>(STBI_MALLOC(size));
+    if (p)
+        memcpy(p, img, size);
+    return p;
 }
 
 void UnLoadImage(img_data img) noexcept
@@ -182,5 +195,17 @@ void UnLoadTexture(ImTextureID texture) noexcept
     unload_texture(texture);
 #endif
 }
+
+
+void Image(const Texture& tex, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& tint_col, const ImVec4& border_col)
+{
+    return Image(tex.id(), tex.size(), uv0, uv1, tint_col, border_col);
+}
+
+bool ImageButton(const Texture& tex, const ImVec2& uv0, const ImVec2& uv1, int frame_padding, const ImVec4& bg_col, const ImVec4& tint_col)
+{
+    return ImageButton(tex.id(), tex.size(), uv0, uv1, frame_padding, bg_col, tint_col);
+}
+
 
 } // namespace ImGui

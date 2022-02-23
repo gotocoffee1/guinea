@@ -36,12 +36,16 @@ img_data LoadImageFromMemory(const void* buffer,
 
 void UnLoadImage(img_data img) noexcept;
 
+img_data CopyImage(const img_data img,
+                   int out_width,
+                   int out_height) noexcept;
+
 ImTextureID LoadTexture(const img_data image_data, int width, int height) noexcept;
 void UnLoadTexture(ImTextureID texture) noexcept;
 
 struct Img
 {
-    Img(img_data data, int width, int height) noexcept
+    Img(const img_data data, int width, int height) noexcept
         : _data{data}, _width{width}, _height{height}
     {
     }
@@ -56,12 +60,25 @@ struct Img
         _data = LoadImageFromMemory(buffer, size, &_width, &_height);
     }
 
-    // TODO
-    Img(const Img&) noexcept = delete;
-    Img& operator=(Img const&) noexcept = delete;
+    Img(const Img& other) noexcept
+        : Img{CopyImage(other._data, other._width, other._height), other._width, other._height}
+    {
+    }
+
+    Img& operator=(const Img& other) noexcept
+    {
+        if (&other != this)
+        {
+            UnLoadImage(_data);
+            _data   = CopyImage(other._data, other._width, other._height);
+            _width  = other._width;
+            _height = other._height;
+        }
+        return *this;
+    }
 
     Img(Img&& other) noexcept
-        : _data{other._data}, _width{other._width}, _height{other._height}
+        : Img{other._data, other._width, other._height}
     {
         other._data = nullptr;
     }
@@ -70,6 +87,8 @@ struct Img
     {
         if (&other != this)
         {
+            UnLoadImage(_data);
+
             _data   = other._data;
             _width  = other._width;
             _height = other._height;
@@ -77,6 +96,43 @@ struct Img
             other._data = nullptr;
         }
         return *this;
+    }
+
+    int offset(int x, int y) const
+    {
+        IM_ASSERT((x < _width && y < _height) && "coordinates not in range");
+        return (x + (y * _width)) * comp;
+    }
+
+    ImU32 get_pixel(int x, int y) const noexcept
+    {
+        const img_data p = &_data[offset(x, y)];
+        return IM_COL32(p[0], p[1], p[2], p[3]);
+    }
+
+    void set_pixel(int x, int y, ImU32 col) noexcept
+    {
+        img_data p = &_data[offset(x, y)];
+        p[0]       = (col >> IM_COL32_R_SHIFT) & 0xFFU;
+        p[1]       = (col >> IM_COL32_G_SHIFT) & 0xFFU;
+        p[2]       = (col >> IM_COL32_B_SHIFT) & 0xFFU;
+        p[3]       = (col >> IM_COL32_A_SHIFT) & 0xFFU;
+    }
+
+    template<typename F>
+    void for_each(F&& f)
+    {
+        auto size  = _height * _width * comp;
+        for (int i = 0; i < size; i += comp)
+            f(*reinterpret_cast<ImU32*>(&_data[i]));
+    }
+    
+    template<typename F>
+    void for_each(F&& f) const
+    {
+        auto size  = _height * _width * comp;
+        for (int i = 0; i < size; i += comp)
+            f(*reinterpret_cast<const ImU32*>(&_data[i]));
     }
 
     ~Img() noexcept
@@ -108,6 +164,13 @@ struct Img
     {
         return _data;
     }
+    
+    img_data data() noexcept
+    {
+        return _data;
+    }
+
+    static constexpr int comp = 4;
 
   private:
     img_data _data;
@@ -123,7 +186,7 @@ struct Texture
     }
 
     explicit Texture(const Img& img) noexcept
-        : _id{LoadTexture(img.data(), img.width(), img.height())}, _width{img.width()}, _height{img.height()}
+        : Texture{LoadTexture(img.data(), img.width(), img.height()), img.width(), img.height()}
     {
     }
 
@@ -131,7 +194,7 @@ struct Texture
     Texture& operator=(Texture const&) noexcept = delete;
 
     Texture(Texture&& other) noexcept
-        : _id{other._id}, _width{other._width}, _height{other._height}
+        : Texture{other._id, other._width, other._height}
     {
         other._id = nullptr;
     }
@@ -140,6 +203,8 @@ struct Texture
     {
         if (&other != this)
         {
+            UnLoadTexture(_id);
+
             _id     = other._id;
             _width  = other._width;
             _height = other._height;
@@ -159,7 +224,7 @@ struct Texture
         return ImVec2{static_cast<float>(_width), static_cast<float>(_height)};
     }
 
-    explicit operator ImTextureID() const noexcept
+    operator ImTextureID() const noexcept
     {
         return _id;
     }
@@ -189,6 +254,11 @@ struct Texture
     int _width;
     int _height;
 };
+
+IMGUI_API void Image(const Texture& tex, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& tint_col = ImVec4(1, 1, 1, 1), const ImVec4& border_col = ImVec4(0, 0, 0, 0));
+IMGUI_API bool ImageButton(const Texture& tex, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), int frame_padding = -1, const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1)); // <0 frame_padding uses default frame padding settings. 0 for no padding
+
+
 } // namespace ImGui
 
 namespace ImGui

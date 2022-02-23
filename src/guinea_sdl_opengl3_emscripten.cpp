@@ -159,4 +159,4 @@ extern "C" EXPORT void loop(ui::guinea& self, ImGuiContext* ctx) noexcept
     return ui::guinea::impl::loop(self);
 }
 
-//#include "gl_texture.hpp"
+#include "gl_texture.hpp"
