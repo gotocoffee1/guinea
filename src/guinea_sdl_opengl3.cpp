@@ -10,7 +10,6 @@
 #endif
 
 #include <cstring>
-#include <string>
 
 struct ui::guinea::impl
 {
@@ -56,7 +55,7 @@ struct ui::guinea::impl
         SDL_Window* window           = SDL_CreateWindow(self.title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, static_cast<int>(self.resolution.x), static_cast<int>(self.resolution.y), window_flags);
         SDL_GLContext gl_context     = SDL_GL_CreateContext(window);
         SDL_GL_MakeCurrent(window, gl_context);
-        SDL_GL_SetSwapInterval(0); // Disable vsync
+        SDL_GL_SetSwapInterval((self.fps <= 0) ? self.fps : 1); // vsync
 
         // Setup Platform/Renderer bindings
         ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
@@ -107,6 +106,9 @@ struct ui::guinea::impl
                 if (self.update(done))
                     frame_cnt = 0;
 
+                if (done)
+                    return true;
+
                 if (frame_cnt++ < 5)
                 {
                     // Start the Dear ImGui frame
@@ -140,7 +142,7 @@ struct ui::guinea::impl
                     SDL_GL_MakeCurrent(window, gl_context);
                     SDL_GL_SwapWindow(window);
                 }
-                return done;
+                return false;
             });
         self.unload();
         ImGui_ImplOpenGL3_Shutdown();

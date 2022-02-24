@@ -19,8 +19,12 @@ class guinea
   public:
     std::string title  = "";
     ImVec4 clear_color = ImColor(62, 62, 66);
-    int fps            = 30;
-    ImVec2 resolution  = {1280, 720};
+#ifdef __EMSCRIPTEN__
+    int fps = 0;
+#else
+    int fps = 30;
+#endif
+    ImVec2 resolution = {1280, 720};
 
     guinea() noexcept = default;
     guinea(guinea&&)  = delete;                /* Move not allowed */
@@ -65,7 +69,7 @@ class guinea
 #endif
 #ifndef BUILD_GUINEA_BACKEND_STATIC
   private:
-    void* load_texture_ptr     = nullptr;
+    void* load_texture_ptr   = nullptr;
     void* unload_texture_ptr = nullptr;
 #endif
 

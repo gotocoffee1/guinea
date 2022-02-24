@@ -1,8 +1,8 @@
 #pragma once
 
 extern "C" EXPORT ImTextureID load_texture(const unsigned char* image_data,
-                                           int out_width,
-                                           int out_height)
+                                           int image_width,
+                                           int image_height)
 {
     // Create a OpenGL texture identifier
     GLuint image_texture;
@@ -22,8 +22,8 @@ extern "C" EXPORT ImTextureID load_texture(const unsigned char* image_data,
     glTexImage2D(GL_TEXTURE_2D,
                  0,
                  GL_RGBA,
-                 out_width,
-                 out_height,
+                 image_width,
+                 image_height,
                  0,
                  GL_RGBA,
                  GL_UNSIGNED_BYTE,
@@ -32,9 +32,9 @@ extern "C" EXPORT ImTextureID load_texture(const unsigned char* image_data,
     return reinterpret_cast<ImTextureID>(static_cast<uintptr_t>(image_texture));
 }
 
-extern "C" EXPORT void unload_texture(ImTextureID out_texture)
+extern "C" EXPORT void unload_texture(ImTextureID texture)
 {
     glBindTexture(GL_TEXTURE_2D, 0);
-    auto image_texture = static_cast<GLuint>(reinterpret_cast<uintptr_t>(out_texture));
+    auto image_texture = static_cast<GLuint>(reinterpret_cast<uintptr_t>(texture));
     glDeleteTextures(1, &image_texture);
 }

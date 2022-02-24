@@ -19,25 +19,36 @@ endif()
 
 option(BUILD_GUINEA_EXAMPLES "Build guinea examples" OFF)
 option(BUILD_GUINEA_TESTS "Build guinea tests" OFF)
+
 if(EMSCRIPTEN)
-  option(BUILD_GUINEA_BACKEND_STATIC "Build guinea backend static" ON)
+  set(INIT_BUILD_GUINEA_BACKEND_STATIC ON)
 else()
-  option(BUILD_GUINEA_BACKEND_STATIC "Build guinea backend static" OFF)
+  set(INIT_BUILD_GUINEA_BACKEND_STATIC OFF)
 endif()
 
+if(WIN32)
+  set(INIT_GUINEA_PLATFORM "win32")
+else()
+  set(INIT_GUINEA_PLATFORM "sdl")
+endif()
+
+if(EMSCRIPTEN)
+  set(INIT_GUINEA_RENDERER "opengl3")
+elseif(WIN32)
+  set(INIT_GUINEA_RENDERER "dx11")
+else()
+  set(INIT_GUINEA_RENDERER "opengl2")
+endif()
+
+option(BUILD_GUINEA_BACKEND_STATIC "Build guinea backend static"
+       ${INIT_BUILD_GUINEA_BACKEND_STATIC})
+
+set(GUINEA_RENDERER
+    ${INIT_GUINEA_RENDERER}
+    CACHE STRING "Renderer")
 set(GUINEA_PLATFORM
-    "sdl"
+    ${INIT_GUINEA_PLATFORM}
     CACHE STRING "Platform")
-
-if(EMSCRIPTEN)
-  set(GUINEA_RENDERER
-      "opengl3"
-      CACHE STRING "Renderer")
-else()
-  set(GUINEA_RENDERER
-      "opengl2"
-      CACHE STRING "Renderer")
-endif()
 
 set(DEFAULT_GUINEA_BACKEND
     "guinea_${GUINEA_PLATFORM}_${GUINEA_RENDERER}"

@@ -6,10 +6,10 @@
 #include "imgui_impl_opengl3.h"
 #include <SDL.h>
 #include <SDL_opengles2.h>
-#include <cstring>
 #include <emscripten.h>
 #include <emscripten/html5.h>
-#include <string>
+
+#include <cstring>
 
 struct ui::guinea::impl
 {
@@ -40,7 +40,7 @@ struct ui::guinea::impl
 
         // Create window with graphics context
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24); 
+        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
         SDL_DisplayMode current;
         SDL_GetCurrentDisplayMode(0, &current);
@@ -74,14 +74,6 @@ struct ui::guinea::impl
             {
                 guinea& self = *static_cast<guinea*>(arg);
                 self.done    = true;
-                self.unload();
-                ImGui_ImplOpenGL3_Shutdown();
-                ImGui_ImplSDL2_Shutdown();
-                SDL_GL_DeleteContext(g_GLContext);
-                SDL_DestroyWindow(g_Window);
-                SDL_Quit();
-
-                self.shutdown();
 
                 return nullptr;
             });
@@ -91,19 +83,32 @@ struct ui::guinea::impl
                                         guinea& self = *static_cast<guinea*>(arg);
                                         if (self.update(self.done))
                                             self.frame_cnt = 0;
+
+                                        if (self.done)
+                                        {
+                                            emscripten_cancel_main_loop();
+                                            self.unload();
+                                            ImGui_ImplOpenGL3_Shutdown();
+                                            ImGui_ImplSDL2_Shutdown();
+                                            SDL_GL_DeleteContext(g_GLContext);
+                                            SDL_DestroyWindow(g_Window);
+                                            SDL_Quit();
+                                            self.shutdown();
+                                            return EM_FALSE;
+                                        }
                                         return EM_TRUE;
                                     },
-                                    1000.0 / self.fps,
+                                    1000.0 / 30.0,
                                     &self);
-        emscripten_set_main_loop_arg(inner_loop, &self, 0, true);
+        self.update(self.done);
+        emscripten_set_main_loop_arg(inner_loop, &self, self.fps, true);
     }
 
     static void inner_loop(void* arg) noexcept
     {
-        ImGuiIO& io  = ImGui::GetIO();
         guinea& self = *static_cast<guinea*>(arg);
+        ImGuiIO& io  = ImGui::GetIO();
 
-        self.done = false;
         std::string dropfile;
         const char* droptype = nullptr;
         SDL_Event event;

@@ -5,14 +5,14 @@
 #include <SDL.h>
 #include <SDL_syswm.h>
 #include <d3d11.h>
+
 #ifdef _MSC_VER
 #pragma comment(lib, "d3d11")
 #endif
 
-#include <chrono>
 #include <cstring>
-#include <string>
-#include <thread>
+
+static ID3D11Device* g_pd3dDevice = nullptr;
 
 struct ui::guinea::impl
 {
@@ -27,7 +27,6 @@ struct ui::guinea::impl
         }
 
         // Data
-        ID3D11Device* g_pd3dDevice                     = nullptr;
         ID3D11DeviceContext* g_pd3dDeviceContext       = nullptr;
         IDXGISwapChain* g_pSwapChain                   = nullptr;
         ID3D11RenderTargetView* g_mainRenderTargetView = nullptr;
@@ -175,6 +174,9 @@ struct ui::guinea::impl
                 if (self.update(done))
                     frame_cnt = 0;
 
+                if (done)
+                    return true;
+
                 if (frame_cnt++ < 5)
                 {
                     // Start the Dear ImGui frame
@@ -202,10 +204,10 @@ struct ui::guinea::impl
                         ImGui::UpdatePlatformWindows();
                         ImGui::RenderPlatformWindowsDefault();
                     }
-                    g_pSwapChain->Present(0, 0); // Present without vsync
+                    g_pSwapChain->Present(self.fps <= 0, 0); // Preset (vsync)?
                 }
 
-                return done;
+                return false;
             });
         self.unload();
 
@@ -224,3 +226,5 @@ extern "C" EXPORT void loop(ui::guinea& self, ImGuiContext* ctx) noexcept
     ImGui::SetCurrentContext(ctx);
     return ui::guinea::impl::loop(self);
 }
+
+#include "dx11_texture.hpp"

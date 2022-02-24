@@ -18,16 +18,23 @@
 template<typename F>
 void main_loop(int fps, F&& func) noexcept
 {
-    using namespace std::chrono;
-    using Framerate = duration<double, std::ratio<1, 1>>;
-    auto step       = Framerate{1} / fps;
-    auto next       = steady_clock::now() + step;
-    // Main loop
-    for (;;)
+    if (fps > 0)
     {
-        if (func())
-            break;
-        std::this_thread::sleep_until(next);
-        next += step;
+        using namespace std::chrono;
+        using Framerate = duration<double, std::ratio<1, 1>>;
+        auto step       = Framerate{1} / fps;
+        auto next       = steady_clock::now() + step;
+        // Main loop
+        while (!func())
+        {
+            std::this_thread::sleep_until(next);
+            next += step;
+        }
+    }
+    else
+    {
+        while (!func())
+        {
+        }
     }
 }

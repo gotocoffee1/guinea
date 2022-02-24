@@ -55,7 +55,7 @@ guinea_backend(sdl opengl3)
 if(NOT EMSCRIPTEN)
   guinea_backend(sdl opengl2)
   guinea_backend(sdl dx11)
-  guinea_backend(sdl dx12)
+  guinea_backend(win32 dx11)
 endif()
 
 message(STATUS "Available backends: ${GUINEA_ALL_BACKENDS}")
