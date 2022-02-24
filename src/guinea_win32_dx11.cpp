@@ -4,6 +4,7 @@
 #include "imgui_impl_win32.h"
 
 #include <d3d11.h>
+#include <tchar.h>
 
 #ifdef _MSC_VER
 #pragma comment(lib, "d3d11")
@@ -142,14 +143,18 @@ struct ui::guinea::impl
     {
         // Create application window
         //ImGui_ImplWin32_EnableDpiAwareness();
-
+#ifdef UNICODE
         int size_needed = MultiByteToWideChar(CP_UTF8, 0, &self.title[0], (int)self.title.size(), NULL, 0);
-        std::wstring wtitle(size_needed, 0);
-        MultiByteToWideChar(CP_UTF8, 0, &self.title[0], (int)self.title.size(), &wtitle[0], size_needed);
+        std::wstring title(size_needed, 0);
+        MultiByteToWideChar(CP_UTF8, 0, &self.title[0], (int)self.title.size(), &title[0], size_needed);
+#else
+        std::string title = self.title;
+#endif // UNICODE
 
-        WNDCLASSEX wc = {sizeof(WNDCLASSEX), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(NULL), NULL, NULL, NULL, NULL, wtitle.c_str(), NULL};
+
+        WNDCLASSEX wc = {sizeof(WNDCLASSEX), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(NULL), NULL, NULL, NULL, NULL, _T("guinea"), NULL};
         ::RegisterClassEx(&wc);
-        HWND hwnd = ::CreateWindowW(wc.lpszClassName, wtitle.c_str(), WS_OVERLAPPEDWINDOW, 100, 100, static_cast<int>(self.resolution.x), static_cast<int>(self.resolution.y), NULL, NULL, wc.hInstance, NULL);
+        HWND hwnd = ::CreateWindow(wc.lpszClassName, title.c_str(), WS_OVERLAPPEDWINDOW, 100, 100, static_cast<int>(self.resolution.x), static_cast<int>(self.resolution.y), NULL, NULL, wc.hInstance, NULL);
 
         // Initialize Direct3D
         if (!CreateDeviceD3D(hwnd))
