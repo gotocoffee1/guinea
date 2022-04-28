@@ -133,6 +133,14 @@ struct ui::guinea::impl
             }
             self.frame_cnt = 0;
         }
+
+        static bool WantTextInputLast = false;
+        if (io.WantTextInput && !WantTextInputLast)
+            emscripten_run_script("if (typeof show_keyboard == 'function') { show_keyboard(); }");
+        else if (!io.WantTextInput && WantTextInputLast)
+            emscripten_run_script("if (typeof hide_keyboard == 'function') { hide_keyboard(); }");
+        WantTextInputLast = io.WantTextInput;
+
         if (self.frame_cnt++ < 5)
         {
             // Start the Dear ImGui frame
