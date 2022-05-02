@@ -18,6 +18,25 @@ struct ui::guinea::impl
     static inline SDL_Window* g_Window      = NULL;
     static inline SDL_GLContext g_GLContext = NULL;
 
+    static void update(ui::guinea& self, long id) noexcept
+    {
+        if (self.update(self.done))
+            self.frame_cnt = 0;
+
+        if (self.done)
+        {
+            emscripten_cancel_main_loop();
+            self.unload();
+            ImGui_ImplOpenGL3_Shutdown();
+            ImGui_ImplSDL2_Shutdown();
+            SDL_GL_DeleteContext(g_GLContext);
+            SDL_DestroyWindow(g_Window);
+            SDL_Quit();
+            self.shutdown();
+            emscripten_clear_interval(id);
+        }
+    }
+
     static void loop(ui::guinea& self) noexcept
     {
         // Setup SDL
@@ -68,38 +87,25 @@ struct ui::guinea::impl
         self.done      = false;
         self.frame_cnt = 0;
 
+        static long update_id = emscripten_set_interval(
+            [](void* arg)
+            {
+                guinea& self = *static_cast<guinea*>(arg);
+                update(self, update_id);
+            },
+            1000.0 / 30.0,
+            &self);
+
         emscripten_set_beforeunload_callback(
             &self,
             [](int, const void*, void* arg) -> const char*
             {
                 guinea& self = *static_cast<guinea*>(arg);
                 self.done    = true;
-
+                update(self, update_id);
                 return nullptr;
             });
 
-        emscripten_set_timeout_loop([](double, void* arg) -> EM_BOOL
-                                    {
-                                        guinea& self = *static_cast<guinea*>(arg);
-                                        if (self.update(self.done))
-                                            self.frame_cnt = 0;
-
-                                        if (self.done)
-                                        {
-                                            emscripten_cancel_main_loop();
-                                            self.unload();
-                                            ImGui_ImplOpenGL3_Shutdown();
-                                            ImGui_ImplSDL2_Shutdown();
-                                            SDL_GL_DeleteContext(g_GLContext);
-                                            SDL_DestroyWindow(g_Window);
-                                            SDL_Quit();
-                                            self.shutdown();
-                                            return EM_FALSE;
-                                        }
-                                        return EM_TRUE;
-                                    },
-                                    1000.0 / 30.0,
-                                    &self);
         self.update(self.done);
         emscripten_set_main_loop_arg(inner_loop, &self, self.fps, true);
     }
