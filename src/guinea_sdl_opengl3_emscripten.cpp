@@ -118,6 +118,8 @@ struct ui::guinea::impl
         std::string dropfile;
         const char* droptype = nullptr;
         SDL_Event event;
+        static float touch_timer = 0;
+        static bool is_touch     = false;
         while (SDL_PollEvent(&event))
         {
             ImGui_ImplSDL2_ProcessEvent(&event);
@@ -136,9 +138,25 @@ struct ui::guinea::impl
                 dropfile.append(event.drop.file, std::strlen(event.drop.file) + 1);
                 SDL_free(event.drop.file);
                 break;
+            case SDL_FINGERDOWN:
+                is_touch = true;
+                break;
+            case SDL_FINGERUP:
+                is_touch    = false;
+                touch_timer = 0;
+                break;
             }
+
             self.frame_cnt = 0;
         }
+        if (is_touch)
+            if ((touch_timer += io.DeltaTime) > 0.8f)
+            {
+                is_touch    = false;
+                touch_timer = 0;
+                io.AddMouseButtonEvent(1, true);
+                io.AddMouseButtonEvent(1, false);
+            }
 
         static bool WantTextInputLast = false;
         if (io.WantTextInput && !WantTextInputLast)
