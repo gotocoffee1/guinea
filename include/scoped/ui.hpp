@@ -8,11 +8,11 @@ namespace scoped
 {
 namespace ui
 {
-#define DELETE_MOVE_COPY(Base)                                   \
-    Base(Base&&)  = delete;               /* Move not allowed */ \
-    Base& operator=(Base&&) = delete;     /* "" */               \
-    Base(const Base&)       = delete;     /* Copy not allowed */ \
-    Base& operator=(const Base&) = delete /* "" */
+#define DELETE_MOVE_COPY(Base)                                    \
+    Base(Base&&)                 = delete; /* Move not allowed */ \
+    Base& operator=(Base&&)      = delete; /* "" */               \
+    Base(const Base&)            = delete; /* Copy not allowed */ \
+    Base& operator=(const Base&) = delete  /* "" */
 
 struct Window
 {
@@ -226,6 +226,28 @@ struct Combo
     }
 
     DELETE_MOVE_COPY(Combo);
+};
+
+struct ListBox
+{
+    bool IsOpen;
+
+    ListBox(const char* label, const ImVec2& size = ImVec2(0, 0))
+    {
+        IsOpen = ImGui::BeginListBox(label, size);
+    }
+    ~ListBox()
+    {
+        if (IsOpen)
+            ImGui::EndListBox();
+    }
+
+    explicit operator bool() const
+    {
+        return IsOpen;
+    }
+
+    DELETE_MOVE_COPY(ListBox);
 };
 
 struct Table
@@ -551,9 +573,9 @@ struct PopupContextWindow
 {
     bool IsOpen;
 
-    PopupContextWindow(const char* str_id = NULL, int mouse_button = 1, bool also_over_items = true)
+    PopupContextWindow(const char* str_id = NULL, ImGuiPopupFlags flags = 1)
     {
-        IsOpen = ImGui::BeginPopupContextWindow(str_id, mouse_button, also_over_items);
+        IsOpen = ImGui::BeginPopupContextWindow(str_id, flags);
     }
     ~PopupContextWindow()
     {

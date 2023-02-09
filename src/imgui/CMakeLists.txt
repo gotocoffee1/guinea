@@ -1,7 +1,7 @@
 FetchContent_Declare(
   imgui
   GIT_REPOSITORY https://github.com/ocornut/imgui.git
-  GIT_TAG 1ee252772ae9c0a971d06257bb5c89f628fa696a)
+  GIT_TAG 95412ad3a5c03f63eba116a5435302fec52e99e5)
 
 FetchContent_GetProperties(imgui)
 if(NOT imgui_POPULATED)
@@ -67,13 +67,13 @@ if(OPENGL_FOUND OR EMSCRIPTEN)
 endif()
 
 if(TARGET SDL2::SDL2 OR EMSCRIPTEN)
-  backend("platform" sdl)
+  backend("platform" sdl2)
 
   if(EMSCRIPTEN)
-    target_compile_options(imgui_platform_sdl PUBLIC "SHELL:-s USE_SDL=2")
-    target_link_options(imgui_platform_sdl PUBLIC "SHELL:-s USE_SDL=2")
+    target_compile_options(imgui_platform_sdl2 PUBLIC "SHELL:-s USE_SDL=2")
+    target_link_options(imgui_platform_sdl2 PUBLIC "SHELL:-s USE_SDL=2")
   else()
-    target_link_libraries(imgui_platform_sdl PUBLIC SDL2::SDL2)
+    target_link_libraries(imgui_platform_sdl2 PUBLIC SDL2::SDL2)
   endif()
 endif()
 

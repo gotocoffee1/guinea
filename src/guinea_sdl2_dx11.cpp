@@ -1,7 +1,7 @@
 #include "guinea_impl.hpp"
 
 #include "imgui_impl_dx11.h"
-#include "imgui_impl_sdl.h"
+#include "imgui_impl_sdl2.h"
 #include <SDL.h>
 #include <SDL_syswm.h>
 #include <d3d11.h>

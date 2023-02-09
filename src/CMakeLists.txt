@@ -50,11 +50,11 @@ function(guinea_backend platform renderer)
   endif()
 endfunction()
 
-guinea_backend(sdl opengl3)
+guinea_backend(sdl2 opengl3)
 
 if(NOT EMSCRIPTEN)
-  guinea_backend(sdl opengl2)
-  guinea_backend(sdl dx11)
+  guinea_backend(sdl2 opengl2)
+  guinea_backend(sdl2 dx11)
   guinea_backend(win32 dx11)
 endif()
 

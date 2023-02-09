@@ -29,7 +29,7 @@ endif()
 if(WIN32)
   set(INIT_GUINEA_PLATFORM "win32")
 else()
-  set(INIT_GUINEA_PLATFORM "sdl")
+  set(INIT_GUINEA_PLATFORM "sdl2")
 endif()
 
 if(EMSCRIPTEN)
