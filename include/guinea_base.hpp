@@ -68,9 +68,11 @@ class guinea
     friend void ImGui::guinea_assert(const char* msg);
 #endif
 #ifndef BUILD_GUINEA_BACKEND_STATIC
+    using load_texture_t = ImTextureID(*)(const unsigned char* image_data, int out_width, int out_height) noexcept;
+    using unload_texture_t = void(*)(ImTextureID out_texture) noexcept;
   private:
-    void* load_texture_ptr   = nullptr;
-    void* unload_texture_ptr = nullptr;
+    load_texture_t load_texture_ptr   = nullptr;
+    unload_texture_t unload_texture_ptr = nullptr;
 #endif
 
   private:

@@ -8,7 +8,6 @@
 
 extern "C" void loop(ui::guinea& self, ImGuiContext* ctx) noexcept;
 
-
 namespace ui
 {
 guinea::~guinea() noexcept = default;
@@ -49,7 +48,7 @@ static void create_context(guinea* self) noexcept
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;     // Enable Docking
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;   // Enable Multi-Viewport / Platform Windows
-    
+
     ui::plot::CreateContext();
     ui::ne::SetCurrentEditor(ui::ne::CreateEditor());
     //io.ConfigViewportsNoAutoMerge = true;
@@ -88,8 +87,8 @@ int guinea::launch(int argc, char** argv) noexcept
         {
             if (auto loop_ptr = reinterpret_cast<decltype(&loop)>(lib::get_symbol(l, "loop")))
             {
-                load_texture_ptr   = lib::get_symbol(l, "load_texture");
-                unload_texture_ptr = lib::get_symbol(l, "unload_texture");
+                *reinterpret_cast<void**>(&load_texture_ptr)   = lib::get_symbol(l, "load_texture");
+                *reinterpret_cast<void**>(&unload_texture_ptr) = lib::get_symbol(l, "unload_texture");
 
                 context ctx{this};
                 loop_ptr(*this, ImGui::GetCurrentContext());

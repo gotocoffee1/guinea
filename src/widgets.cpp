@@ -114,27 +114,25 @@ bool Spinner(const char* label, float radius, float thickness)
 
 } // namespace ImGui
 
+#ifdef BUILD_GUINEA_BACKEND_STATIC
 extern "C" ImTextureID load_texture(const unsigned char* image_data, int out_width, int out_height) noexcept;
 extern "C" void unload_texture(ImTextureID out_texture) noexcept;
-
-#ifndef BUILD_GUINEA_BACKEND_STATIC
-
+#else
 struct ui::guinea::texture
 {
     static ImTextureID load(const unsigned char* image_data, int width, int height) noexcept
     {
         if (auto* ctx = ui::ctx::get_current(); ctx->load_texture_ptr)
-            return static_cast<decltype(&load_texture)>(ctx->load_texture_ptr)(image_data, width, height);
+            return ctx->load_texture_ptr(image_data, width, height);
         return nullptr;
     }
 
     static void unload(ImTextureID texture) noexcept
     {
         if (auto* ctx = ui::ctx::get_current(); ctx->unload_texture_ptr)
-            return static_cast<decltype(&unload_texture)>(ctx->unload_texture_ptr)(texture);
+            return ctx->unload_texture_ptr(texture);
     }
 };
-
 #endif
 
 namespace ImGui
@@ -196,7 +194,6 @@ void UnLoadTexture(ImTextureID texture) noexcept
 #endif
 }
 
-
 void Image(const Texture& tex, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& tint_col, const ImVec4& border_col)
 {
     return Image(tex.id(), tex.size(), uv0, uv1, tint_col, border_col);
@@ -206,6 +203,5 @@ bool ImageButton(const Texture& tex, const ImVec2& uv0, const ImVec2& uv1, int f
 {
     return ImageButton(tex.id(), tex.size(), uv0, uv1, frame_padding, bg_col, tint_col);
 }
-
 
 } // namespace ImGui
