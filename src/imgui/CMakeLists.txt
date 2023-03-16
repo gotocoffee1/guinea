@@ -17,7 +17,9 @@ target_sources(
           "${imgui_SOURCE_DIR}/imgui_tables.cpp"
           "${imgui_SOURCE_DIR}/imgui_widgets.cpp"
           "${imgui_SOURCE_DIR}/imgui_demo.cpp"
-          "${imgui_SOURCE_DIR}/misc/cpp/imgui_stdlib.cpp")
+          "${imgui_SOURCE_DIR}/misc/cpp/imgui_stdlib.cpp"
+          "${imgui_SOURCE_DIR}/misc/cpp/imgui_stdlib.cpp"
+          "${CMAKE_CURRENT_SOURCE_DIR}/guinea_config.cpp")
 
 target_include_directories(
   imgui PUBLIC $<BUILD_INTERFACE:${imgui_SOURCE_DIR}>

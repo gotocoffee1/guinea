@@ -26,11 +26,11 @@ class guinea
 #endif
     ImVec2 resolution = {1280, 720};
 
-    guinea() noexcept = default;
-    guinea(guinea&&)  = delete;                /* Move not allowed */
-    guinea& operator=(guinea&&) = delete;      /* "" */
-    guinea(const guinea&)       = delete;      /* Copy not allowed */
-    guinea& operator=(const guinea&) = delete; /* "" */
+    guinea()                         = default;
+    guinea(guinea&&)                 = delete;
+    guinea& operator=(guinea&&)      = delete;
+    guinea(const guinea&)            = delete;
+    guinea& operator=(const guinea&) = delete;
 
   protected:
     virtual const char* setup(int, char**) noexcept;
@@ -68,10 +68,11 @@ class guinea
     friend void ImGui::guinea_assert(const char* msg);
 #endif
 #ifndef BUILD_GUINEA_BACKEND_STATIC
-    using load_texture_t = ImTextureID(*)(const unsigned char* image_data, int out_width, int out_height) noexcept;
-    using unload_texture_t = void(*)(ImTextureID out_texture) noexcept;
+    using load_texture_t   = ImTextureID (*)(const unsigned char* image_data, int out_width, int out_height) noexcept;
+    using unload_texture_t = void (*)(ImTextureID out_texture) noexcept;
+
   private:
-    load_texture_t load_texture_ptr   = nullptr;
+    load_texture_t load_texture_ptr     = nullptr;
     unload_texture_t unload_texture_ptr = nullptr;
 #endif
 
@@ -106,18 +107,3 @@ struct ctx
 };
 
 } // namespace ui
-
-#ifdef USE_GUINEA_ASSERT
-#include <cassert>
-
-namespace ImGui
-{
-inline void guinea_assert(const char* msg)
-{
-    if (auto* ctx = ui::ctx::get_current())
-        ctx->failure(msg);
-    else
-        assert(false && msg);
-}
-} // namespace ImGui
-#endif
