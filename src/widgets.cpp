@@ -152,7 +152,7 @@ img_data LoadImageFromMemory(const void* buffer,
     return stbi_load_from_memory(static_cast<const stbi_uc*>(buffer), size, out_width, out_height, NULL, Img::comp);
 }
 
-img_data CopyImage(const img_data img,
+img_data CopyImage(const_img_data img,
                    int out_width,
                    int out_height) noexcept
 {
@@ -172,7 +172,7 @@ void UnLoadImage(img_data img) noexcept
     stbi_image_free(img);
 }
 
-ImTextureID LoadTexture(const img_data image_data, int width, int height) noexcept
+ImTextureID LoadTexture(const_img_data image_data, int width, int height) noexcept
 {
     if (image_data == NULL)
         return nullptr;

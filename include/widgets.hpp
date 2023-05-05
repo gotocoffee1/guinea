@@ -13,6 +13,14 @@ inline void TextUnformatted(std::string_view text)
     ImGui::TextUnformatted(text.data(), text.data() + text.size());
 }
 
+#if __cplusplus >= 202002L
+inline void TextUnformatted(std::u8string_view text)
+{
+    auto ptr = reinterpret_cast<const char*>(text.data());
+    ImGui::TextUnformatted(ptr, ptr + text.size());
+}
+#endif
+
 bool BufferingBar(const char* label,
                   float value,
                   const ImVec2& size_arg);
@@ -25,6 +33,7 @@ bool Spinner(const char* label,
 namespace ImGui
 {
 using img_data = unsigned char*;
+using const_img_data = const unsigned char*;
 
 img_data LoadImageFromFile(const char* filename,
                            int* out_width,
@@ -36,16 +45,16 @@ img_data LoadImageFromMemory(const void* buffer,
 
 void UnLoadImage(img_data img) noexcept;
 
-img_data CopyImage(const img_data img,
+img_data CopyImage(const_img_data img,
                    int out_width,
                    int out_height) noexcept;
 
-ImTextureID LoadTexture(const img_data image_data, int width, int height) noexcept;
+ImTextureID LoadTexture(const_img_data image_data, int width, int height) noexcept;
 void UnLoadTexture(ImTextureID texture) noexcept;
 
 struct Img
 {
-    Img(const img_data data, int width, int height) noexcept
+    Img(img_data data, int width, int height) noexcept
         : _data{data}, _width{width}, _height{height}
     {
     }
@@ -106,7 +115,7 @@ struct Img
 
     ImU32 get_pixel(int x, int y) const noexcept
     {
-        const img_data p = &_data[offset(x, y)];
+        const_img_data p = &_data[offset(x, y)];
         return IM_COL32(p[0], p[1], p[2], p[3]);
     }
 
@@ -160,7 +169,7 @@ struct Img
         return _height;
     }
 
-    const img_data data() const noexcept
+    const_img_data data() const noexcept
     {
         return _data;
     }
@@ -260,6 +269,8 @@ IMGUI_API bool ImageButton(const Texture& tex, const ImVec2& uv0 = ImVec2(0, 0),
 
 
 } // namespace ImGui
+
+#include <limits>
 
 namespace ImGui
 {
