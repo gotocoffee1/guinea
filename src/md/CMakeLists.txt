@@ -1,7 +1,7 @@
 FetchContent_Declare(
   imgui_markdown
   GIT_REPOSITORY https://github.com/juliettef/imgui_markdown.git
-  GIT_TAG 0301a309a1692f1e8f7b8eb0f58d2fca5fbfc610)
+  GIT_TAG 61a181bdb83f450f852f7cf5d1282d8cda1c0f57)
 
 FetchContent_GetProperties(imgui_markdown)
 if(NOT imgui_markdown_POPULATED)

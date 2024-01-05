@@ -1,7 +1,7 @@
 FetchContent_Declare(
   imgui-node-editor
   GIT_REPOSITORY https://github.com/thedmd/imgui-node-editor.git
-  GIT_TAG 99ec923a39062f556ec7676fb9ba6d302d109f76)
+  GIT_TAG e78e447900909a051817a760efe13fe83e6e1afc)
 
 FetchContent_GetProperties(imgui-node-editor)
 if(NOT imgui-node-editor_POPULATED)
