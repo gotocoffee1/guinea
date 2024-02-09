@@ -31,6 +31,14 @@ set(IMGUI_USER_CONFIG
 
 target_compile_definitions(imgui PUBLIC IMGUI_USER_CONFIG=${IMGUI_USER_CONFIG})
 
+find_package(Freetype)
+
+if(TARGET Freetype::Freetype)
+  target_compile_definitions(imgui PRIVATE IMGUI_ENABLE_FREETYPE)
+  target_link_libraries(imgui PRIVATE Freetype::Freetype)
+  target_sources(imgui PRIVATE "${imgui_SOURCE_DIR}/misc/freetype/imgui_freetype.cpp")
+endif()
+
 function(backend type name)
   set(tar imgui_${type}_${name})
   add_library(${tar} STATIC EXCLUDE_FROM_ALL
