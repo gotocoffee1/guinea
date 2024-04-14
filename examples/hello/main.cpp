@@ -1,6 +1,8 @@
 
 #include "guinea.hpp"
 
+#include <thread>
+
 struct app final : ui::guinea
 {
     void render() noexcept override
@@ -25,8 +27,8 @@ struct app final : ui::guinea
                 {
                     drop.clear();
                     auto begin = static_cast<const char*>(payload->Data);
-                    auto end = begin + payload->DataSize;
-                    while(begin != end)
+                    auto end   = begin + payload->DataSize;
+                    while (begin != end)
                     {
                         std::string_view sv = begin;
                         begin += std::size(sv) + 1;
@@ -41,7 +43,12 @@ struct app final : ui::guinea
     }
 };
 
-int main(int argc, char** argv)
+int main(int, char**)
 {
-    return app{}.launch(argc, argv);
+    app a{};
+    while (a.loop())
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(30));
+    }
+    return 0;
 }

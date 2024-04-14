@@ -326,7 +326,7 @@ bool DragNum(const char* label, T& p_data, float v_speed, std::nullptr_t p_min, 
 }
 
 template<typename T, typename U = T, typename V = T>
-bool DragNum(const char* label, T& p_data, float v_speed, const U& p_min, const V& p_max = std::numeric_limits<T>::max(), const char* format = nullptr, ImGuiSliderFlags flags = ImGuiSliderFlags_None) noexcept
+bool DragNum(const char* label, T& p_data, float v_speed, const U& p_min, const V& p_max = (std::numeric_limits<T>::max)(), const char* format = nullptr, ImGuiSliderFlags flags = ImGuiSliderFlags_None) noexcept
 {
     T min, max;
     return DragNum(label, p_data, v_speed, to_ptr(min, p_min), to_ptr(max, p_max), format, flags);
@@ -359,7 +359,7 @@ bool InputNum(const char* label, T& p_data, std::nullptr_t p_step, std::nullptr_
 }
 
 template<typename T, typename U = T, typename V = T>
-bool InputNum(const char* label, T& p_data, const U& p_step, const V& p_step_fast = std::numeric_limits<T>::max(), const char* format = nullptr, ImGuiInputTextFlags flags = ImGuiInputTextFlags_None) noexcept
+bool InputNum(const char* label, T& p_data, const U& p_step, const V& p_step_fast = (std::numeric_limits<T>::max)(), const char* format = nullptr, ImGuiInputTextFlags flags = ImGuiInputTextFlags_None) noexcept
 {
     T step, fast_step;
     return InputNum(label, p_data, to_ptr(step, p_step), to_ptr(fast_step, p_step_fast), format, flags);

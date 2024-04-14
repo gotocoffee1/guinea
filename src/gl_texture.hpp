@@ -1,8 +1,6 @@
 #pragma once
 
-extern "C" EXPORT ImTextureID load_texture(const unsigned char* image_data,
-                                           int image_width,
-                                           int image_height)
+ImTextureID ui::guinea::impl::load_texture(ui::guinea& self, const unsigned char* image_data, int image_width, int image_height) noexcept
 {
     // Create a OpenGL texture identifier
     GLuint image_texture;
@@ -32,7 +30,7 @@ extern "C" EXPORT ImTextureID load_texture(const unsigned char* image_data,
     return reinterpret_cast<ImTextureID>(static_cast<uintptr_t>(image_texture));
 }
 
-extern "C" EXPORT void unload_texture(ImTextureID texture)
+void ui::guinea::impl::unload_texture(ui::guinea&, ImTextureID texture) noexcept
 {
     glBindTexture(GL_TEXTURE_2D, 0);
     auto image_texture = static_cast<GLuint>(reinterpret_cast<uintptr_t>(texture));

@@ -10,77 +10,92 @@
 #define UI_EXTERN_TEXT "EXTERN_TEXT"
 #endif
 
+#include <memory>
 #include <string>
+
+#ifndef BUILD_GUINEA_BACKEND_STATIC
+#include "load_lib.hpp"
+#endif
 
 namespace ui
 {
+#ifndef BUILD_GUINEA_BACKEND_STATIC
+
+class guinea;
+
+struct guinea_func
+{
+    using init_t           = void (*)(guinea& self, ImGuiContext* ctx) noexcept;
+    using loop_t           = bool (*)(guinea& self, ImGuiContext* ctx) noexcept;
+    using shutdown_t       = void (*)(guinea& self, ImGuiContext* ctx) noexcept;
+    using load_texture_t   = ImTextureID (*)(guinea& self, const unsigned char* image_data, int out_width, int out_height) noexcept;
+    using unload_texture_t = void (*)(guinea& self, ImTextureID out_texture) noexcept;
+
+    init_t init_ptr                     = nullptr;
+    loop_t loop_ptr                     = nullptr;
+    shutdown_t shutdown_ptr             = nullptr;
+    load_texture_t load_texture_ptr     = nullptr;
+    unload_texture_t unload_texture_ptr = nullptr;
+};
+#endif
+
+struct init_data
+{
+    std::string title = "";
+    ImVec2 resolution = {1280, 720};
+    bool vsync        = false;
+    std::string backend;
+};
+
 class guinea
 {
   public:
-    std::string title  = "";
     ImVec4 clear_color = ImColor(62, 62, 66);
-#ifdef __EMSCRIPTEN__
-    int fps = 0;
-#else
-    int fps = 30;
-#endif
-    ImVec2 resolution = {1280, 720};
 
-    guinea()                         = default;
+    guinea(init_data init = init_data{}) noexcept;
     guinea(guinea&&)                 = delete;
     guinea& operator=(guinea&&)      = delete;
     guinea(const guinea&)            = delete;
     guinea& operator=(const guinea&) = delete;
 
   protected:
-    virtual const char* setup(int, char**) noexcept;
-
-    virtual void load(void) noexcept
-    {
-    }
     virtual void render() noexcept
     {
     }
-    virtual bool update(bool&) noexcept
-    {
-        return false;
-    }
-    virtual void unload(void) noexcept
-    {
-    }
-    virtual int shutdown() noexcept;
 
     virtual void failure(const char* msg) noexcept;
 
     virtual ~guinea() noexcept = 0;
 
   public:
-    int launch(int, char**) noexcept;
+    bool loop() noexcept;
 
-    int launch() noexcept
+    struct impl
     {
-        return launch(0, nullptr);
-    }
+        static void init(ui::guinea& self, ImGuiContext* ctx) noexcept;
+        static bool loop(ui::guinea& self, ImGuiContext* ctx) noexcept;
+        static void shutdown(ui::guinea& self, ImGuiContext* ctx) noexcept;
 
-    struct impl;
+        static ImTextureID load_texture(ui::guinea& self, const unsigned char* image_data, int image_width, int image_height) noexcept;
+        static void unload_texture(ui::guinea&, ImTextureID texture) noexcept;
+    };
+
     struct texture;
 #ifdef USE_GUINEA_ASSERT
     friend void ImGui::guinea_assert(const char* msg);
 #endif
+  private:
 #ifndef BUILD_GUINEA_BACKEND_STATIC
-    using load_texture_t   = ImTextureID (*)(const unsigned char* image_data, int out_width, int out_height) noexcept;
-    using unload_texture_t = void (*)(ImTextureID out_texture) noexcept;
-
-  private:
-    load_texture_t load_texture_ptr     = nullptr;
-    unload_texture_t unload_texture_ptr = nullptr;
+    std::unique_ptr<std::remove_pointer_t<lib::handle>, lib::closer> lib;
+    guinea_func funcs;
 #endif
 
-  private:
-#ifdef __EMSCRIPTEN__
-    int frame_cnt;
-    bool done;
-#endif
+    void* platform_data = nullptr;
+    void* renderer_data = nullptr;
+    init_data init;
+    void* imgui_ctx;
+    void* plot_ctx;
+    void* ne_ctx;
 };
 
 } // namespace ui

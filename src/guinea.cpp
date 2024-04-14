@@ -2,38 +2,17 @@
 
 #include <iostream>
 
-#ifndef BUILD_GUINEA_BACKEND_STATIC
-#include "load_lib.hpp"
+#ifdef BUILD_GUINEA_BACKEND_STATIC
+extern "C" void guinea_loop(ui::guinea& self, ImGuiContext* ctx) noexcept;
 #endif
-
-extern "C" void loop(ui::guinea& self, ImGuiContext* ctx) noexcept;
 
 namespace ui
 {
-guinea::~guinea() noexcept = default;
-
-const char* guinea::setup(int argc, char** argv) noexcept
-{
-    if (argc > 1)
-        return argv[1];
-    return DEFAULT_GUINEA_BACKEND;
-}
-
-void guinea::failure(const char* msg) noexcept
-{
-    if (msg)
-        std::cerr << msg << "\n";
-}
-
-int guinea::shutdown() noexcept
-{
-    return EXIT_SUCCESS;
-}
 
 static void create_context(guinea* self) noexcept
 {
     ctx::set_current(self);
-    ui::CreateContext();
+    ui::SetCurrentContext(ui::CreateContext());
     ctx::set_current(self); // its a bit cheesy but ok, guinea context is not youes in hot loop
 
     ImGuiStyle& style                 = ImGui::GetStyle();
@@ -49,7 +28,7 @@ static void create_context(guinea* self) noexcept
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;     // Enable Docking
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;   // Enable Multi-Viewport / Platform Windows
 
-    ui::plot::CreateContext();
+    ui::plot::SetCurrentContext(ui::plot::CreateContext());
     ui::ne::SetCurrentEditor(ui::ne::CreateEditor());
     //io.ConfigViewportsNoAutoMerge = true;
     //io.ConfigViewportsNoTaskBarIcon = true;
@@ -63,49 +42,60 @@ static void destroy_context() noexcept
     ctx::set_current(nullptr);
 }
 
-struct context
+guinea::guinea(init_data d) noexcept
+    : init{std::move(d)}
 {
-    context(guinea* self) noexcept
-    {
-        create_context(self);
-    }
-    ~context() noexcept
-    {
-        destroy_context();
-    }
-};
+    create_context(this);
 
-int guinea::launch(int argc, char** argv) noexcept
-{
-    if (auto backend = setup(argc, argv))
-    {
+    imgui_ctx = ui::GetCurrentContext();
+    plot_ctx  = ui::plot::GetCurrentContext();
+    ne_ctx    = ui::ne::GetCurrentEditor();
+
 #ifdef BUILD_GUINEA_BACKEND_STATIC
-        context ctx{this};
-        loop(*this, ImGui::GetCurrentContext());
+    impl::init(*this, ImGui::GetCurrentContext());
 #else
-        if (auto l = lib::open(backend))
-        {
-            if (auto loop_ptr = reinterpret_cast<decltype(&loop)>(lib::get_symbol(l, "loop")))
-            {
-                *reinterpret_cast<void**>(&load_texture_ptr)   = lib::get_symbol(l, "load_texture");
-                *reinterpret_cast<void**>(&unload_texture_ptr) = lib::get_symbol(l, "unload_texture");
-
-                context ctx{this};
-                loop_ptr(*this, ImGui::GetCurrentContext());
-            }
-            else
-                failure(lib::get_error_message());
-
-            load_texture_ptr   = nullptr;
-            unload_texture_ptr = nullptr;
-            lib::close(l);
-        }
-        else
-            failure(lib::get_error_message());
+    lib.reset(lib::open(init.backend.empty() ? DEFAULT_GUINEA_BACKEND : init.backend));
+    failure(lib::get_error_message());
+    if (auto ptr = reinterpret_cast<const guinea_func*>(lib::get_symbol(lib.get(), "guinea")); ptr)
+        funcs = *ptr;
+    else
+        failure(lib::get_error_message());
+    funcs.init_ptr(*this, ImGui::GetCurrentContext());
 #endif
-    }
+}
 
-    return shutdown();
+guinea::~guinea() noexcept
+{
+    ui::SetCurrentContext(static_cast<ImGuiContext*>(imgui_ctx));
+    ui::plot::SetCurrentContext(static_cast<ImPlotContext*>(plot_ctx));
+    ui::ne::SetCurrentEditor(static_cast<ui::ne::EditorContext*>(ne_ctx));
+
+#ifdef BUILD_GUINEA_BACKEND_STATIC
+    impl::shutdown(*this, ImGui::GetCurrentContext());
+#else
+    funcs.shutdown_ptr(*this, ImGui::GetCurrentContext());
+#endif
+
+    destroy_context();
+}
+
+void guinea::failure(const char* msg) noexcept
+{
+    if (msg)
+        std::cerr << msg << "\n";
+}
+
+bool guinea::loop() noexcept
+{
+    ui::SetCurrentContext(static_cast<ImGuiContext*>(imgui_ctx));
+    ui::plot::SetCurrentContext(static_cast<ImPlotContext*>(plot_ctx));
+    ui::ne::SetCurrentEditor(static_cast<ui::ne::EditorContext*>(ne_ctx));
+
+#ifdef BUILD_GUINEA_BACKEND_STATIC
+    return impl::loop(*this, ImGui::GetCurrentContext());
+#else
+    return funcs.loop_ptr(*this, ImGui::GetCurrentContext());
+#endif
 }
 
 } // namespace ui

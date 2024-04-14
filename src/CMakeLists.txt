@@ -15,9 +15,6 @@ set(GUINEA_ALL_BACKENDS
 
 function(guinea_backend platform renderer)
   if(TARGET imgui_platform_${platform} AND TARGET imgui_renderer_${renderer})
-    if(EMSCRIPTEN)
-      set(extra _emscripten)
-    endif()
     set(tar guinea_${platform}_${renderer})
     if(BUILD_GUINEA_BACKEND_STATIC)
       add_library(${tar} STATIC EXCLUDE_FROM_ALL )
@@ -26,7 +23,7 @@ function(guinea_backend platform renderer)
       add_library(${tar} MODULE EXCLUDE_FROM_ALL )
     endif()
     add_library(guinea::${platform}_${renderer} ALIAS ${tar})
-    target_sources(${tar} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/${tar}${extra}.cpp)
+    target_sources(${tar} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/${tar}.cpp)
     target_link_libraries(${tar} PRIVATE imgui_platform_${platform}
                                          imgui_renderer_${renderer} guinea_base)
 

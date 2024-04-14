@@ -114,26 +114,31 @@ bool Spinner(const char* label, float radius, float thickness)
 
 } // namespace ImGui
 
-#ifdef BUILD_GUINEA_BACKEND_STATIC
-extern "C" ImTextureID load_texture(const unsigned char* image_data, int out_width, int out_height) noexcept;
-extern "C" void unload_texture(ImTextureID out_texture) noexcept;
-#else
 struct ui::guinea::texture
 {
     static ImTextureID load(const unsigned char* image_data, int width, int height) noexcept
     {
-        if (auto* ctx = ui::ctx::get_current(); ctx->load_texture_ptr)
-            return ctx->load_texture_ptr(image_data, width, height);
+#ifdef BUILD_GUINEA_BACKEND_STATIC
+        auto* ctx = ui::ctx::get_current();
+        return ui::guinea::impl::load_texture(*ctx, image_data, width, height);
+#else
+        if (auto* ctx = ui::ctx::get_current(); ctx->funcs.load_texture_ptr)
+            return ctx->funcs.load_texture_ptr(*ctx, image_data, width, height);
         return nullptr;
+#endif
     }
 
     static void unload(ImTextureID texture) noexcept
     {
-        if (auto* ctx = ui::ctx::get_current(); ctx->unload_texture_ptr)
-            return ctx->unload_texture_ptr(texture);
+#ifdef BUILD_GUINEA_BACKEND_STATIC
+        auto* ctx = ui::ctx::get_current();
+        return ui::guinea::impl::unload_texture(*ctx, texture);
+#else
+        if (auto* ctx = ui::ctx::get_current(); ctx->funcs.unload_texture_ptr)
+            return ctx->funcs.unload_texture_ptr(*ctx, texture);
+#endif
     }
 };
-#endif
 
 namespace ImGui
 {
@@ -176,22 +181,14 @@ ImTextureID LoadTexture(const_img_data image_data, int width, int height) noexce
 {
     if (image_data == NULL)
         return nullptr;
-#ifndef BUILD_GUINEA_BACKEND_STATIC
     return ui::guinea::texture::load(image_data, width, height);
-#else
-    return load_texture(image_data, width, height);
-#endif
 }
 
 void UnLoadTexture(ImTextureID texture) noexcept
 {
     if (texture == nullptr)
         return;
-#ifndef BUILD_GUINEA_BACKEND_STATIC
     return ui::guinea::texture::unload(texture);
-#else
-    unload_texture(texture);
-#endif
 }
 
 void Image(const Texture& tex, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& tint_col, const ImVec4& border_col)

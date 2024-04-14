@@ -1,8 +1,6 @@
 #pragma once
 
-extern "C" EXPORT ImTextureID load_texture(const unsigned char* image_data,
-                                           int image_width,
-                                           int image_height)
+ImTextureID ui::guinea::impl::load_texture(ui::guinea& self, const unsigned char* image_data, int image_width, int image_height) noexcept
 {
     // Create texture
     D3D11_TEXTURE2D_DESC desc;
@@ -22,7 +20,10 @@ extern "C" EXPORT ImTextureID load_texture(const unsigned char* image_data,
     subResource.pSysMem          = image_data;
     subResource.SysMemPitch      = desc.Width * 4;
     subResource.SysMemSlicePitch = 0;
-    g_pd3dDevice->CreateTexture2D(&desc, &subResource, &pTexture);
+
+    auto rd = static_cast<renderer_data_t*>(self.renderer_data);
+
+    rd->g_pd3dDevice->CreateTexture2D(&desc, &subResource, &pTexture);
 
     // Create texture view
     D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
@@ -32,13 +33,13 @@ extern "C" EXPORT ImTextureID load_texture(const unsigned char* image_data,
     srvDesc.Texture2D.MipLevels       = desc.MipLevels;
     srvDesc.Texture2D.MostDetailedMip = 0;
     ID3D11ShaderResourceView* out_srv = nullptr;
-    g_pd3dDevice->CreateShaderResourceView(pTexture, &srvDesc, &out_srv);
+    rd->g_pd3dDevice->CreateShaderResourceView(pTexture, &srvDesc, &out_srv);
     pTexture->Release();
 
     return out_srv;
 }
 
-extern "C" EXPORT void unload_texture(ImTextureID texture)
+void ui::guinea::impl::unload_texture(ui::guinea&, ImTextureID texture) noexcept
 {
     auto image_texture = static_cast<ID3D11ShaderResourceView*>(texture);
     image_texture->Release();
