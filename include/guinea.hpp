@@ -4,14 +4,7 @@
 #define _GUINEA_HPP_
 
 #include "imgui.h"
-#if defined(_MSC_VER)
-#pragma warning(push)
-#pragma warning(disable : 4189)
-#endif
-#include "imgui_markdown.h"
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#endif
+#include "imgui_md.h"
 
 #include "misc/cpp/imgui_stdlib.h"
 #include "scoped/ne.hpp"

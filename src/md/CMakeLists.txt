@@ -1,15 +1,28 @@
 FetchContent_Declare(
-  imgui_markdown
-  GIT_REPOSITORY https://github.com/juliettef/imgui_markdown.git
-  GIT_TAG 61a181bdb83f450f852f7cf5d1282d8cda1c0f57)
+  imgui_md
+  GIT_REPOSITORY https://github.com/mekhontsev/imgui_md.git
+  GIT_TAG b9f86beda0cd657b4d07bd9ce88dd05c9088384f
+)
 
-FetchContent_GetProperties(imgui_markdown)
-if(NOT imgui_markdown_POPULATED)
-  FetchContent_Populate(imgui_markdown)
+FetchContent_Declare(
+  md4c 
+  GIT_REPOSITORY https://github.com/mity/md4c.git
+  GIT_TAG 481fbfbdf72daab2912380d62bb5f2187d438408
+)
+
+FetchContent_GetProperties(imgui_md)
+if(NOT imgui_md_POPULATED)
+  FetchContent_Populate(imgui_md)
 endif()
 
-add_library(imgui_md INTERFACE)
+FetchContent_GetProperties(md4c)
+if(NOT md4c_POPULATED)
+  FetchContent_Populate(md4c)
+endif()
 
-target_include_directories(imgui_md INTERFACE $<BUILD_INTERFACE:${imgui_markdown_SOURCE_DIR}>)
+add_library(imgui_md STATIC)
 
-target_link_libraries(imgui_md INTERFACE imgui)
+target_include_directories(imgui_md PUBLIC $<BUILD_INTERFACE:${imgui_md_SOURCE_DIR}> $<BUILD_INTERFACE:${md4c_SOURCE_DIR}/src>)
+
+target_link_libraries(imgui_md PUBLIC imgui)
+target_sources(imgui_md PRIVATE ${imgui_md_SOURCE_DIR}/imgui_md.cpp ${md4c_SOURCE_DIR}/src/md4c.c)
