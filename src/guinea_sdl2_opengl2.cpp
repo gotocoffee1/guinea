@@ -99,6 +99,7 @@ void ui::guinea::impl::init(ui::guinea& self, ImGuiContext* ctx) noexcept
 
     // Setup SDL
     SDL_SetMainReady();
+    SDL_SetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1");
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0)
     {
         self.failure(SDL_GetError());

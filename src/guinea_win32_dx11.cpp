@@ -149,9 +149,9 @@ void ui::guinea::impl::init(ui::guinea& self, ImGuiContext* ctx) noexcept
     // Create application window
     //ImGui_ImplWin32_EnableDpiAwareness();
 #ifdef UNICODE
-    int size_needed = MultiByteToWideChar(CP_UTF8, 0, &self.title[0], (int)self.title.size(), nullptr, 0);
+    int size_needed = MultiByteToWideChar(CP_UTF8, 0, &self.init.title[0], (int)self.init.title.size(), nullptr, 0);
     std::wstring title(size_needed, 0);
-    MultiByteToWideChar(CP_UTF8, 0, &self.title[0], (int)self.title.size(), &title[0], size_needed);
+    MultiByteToWideChar(CP_UTF8, 0, &self.init.title[0], (int)self.init.title.size(), &title[0], size_needed);
 #else
     std::string title = self.init.title;
 #endif // UNICODE
