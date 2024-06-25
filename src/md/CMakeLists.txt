@@ -1,7 +1,7 @@
 FetchContent_Declare(
   imgui_md
   GIT_REPOSITORY https://github.com/gotocoffee1/imgui_md.git
-  GIT_TAG 498fa110c41769d2159839aa42bf58dce4f17031
+  GIT_TAG d4986daa87880c92016d85963e7f4195007a8157
 )
 
 FetchContent_Declare(
