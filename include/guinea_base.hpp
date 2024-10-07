@@ -70,6 +70,8 @@ class guinea
   public:
     bool loop() noexcept;
 
+    void set_ctx() noexcept;
+
     struct impl
     {
         static void init(ui::guinea& self, ImGuiContext* ctx) noexcept;

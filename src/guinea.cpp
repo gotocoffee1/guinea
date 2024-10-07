@@ -8,7 +8,6 @@ extern "C" void guinea_loop(ui::guinea& self, ImGuiContext* ctx) noexcept;
 
 namespace ui
 {
-
 static void create_context(guinea* self) noexcept
 {
     ctx::set_current(self);
@@ -85,12 +84,17 @@ void guinea::failure(const char* msg) noexcept
         std::cerr << msg << "\n";
 }
 
-bool guinea::loop() noexcept
+void guinea::set_ctx() noexcept
 {
     ui::SetCurrentContext(static_cast<ImGuiContext*>(imgui_ctx));
     ui::plot::SetCurrentContext(static_cast<ImPlotContext*>(plot_ctx));
     ui::ne::SetCurrentEditor(static_cast<ui::ne::EditorContext*>(ne_ctx));
+    ctx::set_current(this);
+}
 
+bool guinea::loop() noexcept
+{
+    set_ctx();
 #ifdef BUILD_GUINEA_BACKEND_STATIC
     return impl::loop(*this, ImGui::GetCurrentContext());
 #else
