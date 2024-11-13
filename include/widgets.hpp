@@ -205,7 +205,7 @@ struct Texture
     Texture(Texture&& other) noexcept
         : Texture{other._id, other._width, other._height}
     {
-        other._id = nullptr;
+        other._id = reinterpret_cast<ImTextureID>(nullptr);
     }
 
     Texture& operator=(Texture&& other) noexcept
@@ -218,7 +218,7 @@ struct Texture
             _width  = other._width;
             _height = other._height;
 
-            other._id = nullptr;
+            other._id = reinterpret_cast<ImTextureID>(nullptr);
         }
         return *this;
     }
@@ -240,7 +240,7 @@ struct Texture
 
     explicit operator bool() const noexcept
     {
-        return _id != nullptr;
+        return _id != reinterpret_cast<ImTextureID>(nullptr);
     }
 
     ImTextureID id() const noexcept
@@ -265,7 +265,7 @@ struct Texture
 };
 
 IMGUI_API void Image(const Texture& tex, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& tint_col = ImVec4(1, 1, 1, 1), const ImVec4& border_col = ImVec4(0, 0, 0, 0));
-IMGUI_API bool ImageButton(const Texture& tex, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), int frame_padding = -1, const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1)); // <0 frame_padding uses default frame padding settings. 0 for no padding
+IMGUI_API bool ImageButton(const char* str_id, const Texture& tex, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1)); // <0 frame_padding uses default frame padding settings. 0 for no padding
 
 
 } // namespace ImGui

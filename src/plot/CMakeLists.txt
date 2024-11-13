@@ -1,7 +1,7 @@
 FetchContent_Declare(
   implot
   GIT_REPOSITORY https://github.com/epezent/implot.git
-  GIT_TAG f156599faefe316f7dd20fe6c783bf87c8bb6fd9)
+  GIT_TAG 419a8a0f5fcb77e1e7c19ab540441686bfe21bca)
 
 FetchContent_GetProperties(implot)
 if(NOT implot_POPULATED)

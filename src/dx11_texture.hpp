@@ -36,11 +36,11 @@ ImTextureID ui::guinea::impl::load_texture(ui::guinea& self, const unsigned char
     rd->g_pd3dDevice->CreateShaderResourceView(pTexture, &srvDesc, &out_srv);
     pTexture->Release();
 
-    return out_srv;
+    return reinterpret_cast<ImTextureID>(out_srv);
 }
 
 void ui::guinea::impl::unload_texture(ui::guinea&, ImTextureID texture) noexcept
 {
-    auto image_texture = static_cast<ID3D11ShaderResourceView*>(texture);
+    auto image_texture = reinterpret_cast<ID3D11ShaderResourceView*>(texture);
     image_texture->Release();
 }

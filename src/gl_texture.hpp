@@ -27,12 +27,12 @@ ImTextureID ui::guinea::impl::load_texture(ui::guinea& self, const unsigned char
                  GL_UNSIGNED_BYTE,
                  image_data);
 
-    return reinterpret_cast<ImTextureID>(static_cast<uintptr_t>(image_texture));
+    return static_cast<ImTextureID>(image_texture);
 }
 
 void ui::guinea::impl::unload_texture(ui::guinea&, ImTextureID texture) noexcept
 {
     glBindTexture(GL_TEXTURE_2D, 0);
-    auto image_texture = static_cast<GLuint>(reinterpret_cast<uintptr_t>(texture));
+    auto image_texture = static_cast<GLuint>(texture);
     glDeleteTextures(1, &image_texture);
 }
