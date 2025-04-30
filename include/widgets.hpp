@@ -32,7 +32,7 @@ bool Spinner(const char* label,
 
 namespace ImGui
 {
-using img_data = unsigned char*;
+using img_data       = unsigned char*;
 using const_img_data = const unsigned char*;
 
 img_data LoadImageFromFile(const char* filename,
@@ -48,6 +48,12 @@ void UnLoadImage(img_data img) noexcept;
 img_data CopyImage(const_img_data img,
                    int out_width,
                    int out_height) noexcept;
+
+img_data ResizeImage(const_img_data img,
+                     int input_w,
+                     int input_h,
+                     int output_w,
+                     int output_h) noexcept;
 
 ImTextureID LoadTexture(const_img_data image_data, int width, int height) noexcept;
 void UnLoadTexture(ImTextureID texture) noexcept;
@@ -107,6 +113,12 @@ struct Img
         return *this;
     }
 
+    Img resize(int w, int h) const noexcept
+    {
+        auto* p = ResizeImage(_data, _width, _height, w, h);
+        return Img(p, w, h);
+    }
+
     int offset(int x, int y) const
     {
         IM_ASSERT((x < _width && y < _height) && "coordinates not in range");
@@ -131,15 +143,15 @@ struct Img
     template<typename F>
     void for_each(F&& f)
     {
-        auto size  = _height * _width * comp;
+        auto size = _height * _width * comp;
         for (int i = 0; i < size; i += comp)
             f(*reinterpret_cast<ImU32*>(&_data[i]));
     }
-    
+
     template<typename F>
     void for_each(F&& f) const
     {
-        auto size  = _height * _width * comp;
+        auto size = _height * _width * comp;
         for (int i = 0; i < size; i += comp)
             f(*reinterpret_cast<const ImU32*>(&_data[i]));
     }
@@ -173,7 +185,7 @@ struct Img
     {
         return _data;
     }
-    
+
     img_data data() noexcept
     {
         return _data;
@@ -199,7 +211,7 @@ struct Texture
     {
     }
 
-    Texture(const Texture&) noexcept = delete;
+    Texture(const Texture&) noexcept            = delete;
     Texture& operator=(Texture const&) noexcept = delete;
 
     Texture(Texture&& other) noexcept
@@ -266,7 +278,6 @@ struct Texture
 
 IMGUI_API void Image(const Texture& tex, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& tint_col = ImVec4(1, 1, 1, 1), const ImVec4& border_col = ImVec4(0, 0, 0, 0));
 IMGUI_API bool ImageButton(const char* str_id, const Texture& tex, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1)); // <0 frame_padding uses default frame padding settings. 0 for no padding
-
 
 } // namespace ImGui
 

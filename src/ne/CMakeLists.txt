@@ -1,12 +1,8 @@
-FetchContent_Declare(
+FetchContent_Populate(
   imgui-node-editor
+  QUIET
   GIT_REPOSITORY https://github.com/thedmd/imgui-node-editor.git
   GIT_TAG b302971455b3719ec9b5fb94b2f92d27c62b9ff0)
-
-FetchContent_GetProperties(imgui-node-editor)
-if(NOT imgui-node-editor_POPULATED)
-  FetchContent_Populate(imgui-node-editor)
-endif()
 
 add_library(imgui_ne STATIC)
 

@@ -5,6 +5,8 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
+#include "stb_image_resize.h"
 
 namespace ImGui
 {
@@ -78,7 +80,7 @@ bool Spinner(const char* label, float radius, float thickness)
     const ImGuiID id        = window->GetID(label);
 
     ImVec2 pos = window->DC.CursorPos;
-    ImVec2 size((radius)*2, (radius + style.FramePadding.y) * 2);
+    ImVec2 size((radius) * 2, (radius + style.FramePadding.y) * 2);
 
     const ImRect bb(pos, ImVec2(pos.x + size.x, pos.y + size.y));
     ItemSize(bb, style.FramePadding.y);
@@ -168,6 +170,23 @@ img_data CopyImage(const_img_data img,
     if (p)
         memcpy(p, img, size);
     return p;
+}
+
+img_data ResizeImage(const_img_data img,
+                     int input_w,
+                     int input_h,
+                     int output_w,
+                     int output_h) noexcept
+{
+    auto size = sizeof(*img) * output_w * output_h * Img::comp;
+    auto* p   = static_cast<stbi_uc*>(STBI_MALLOC(size));
+    if (p)
+        if (stbir_resize_uint8(img, input_w, input_h, 0, p, output_w, output_h, 0, Img::comp))
+            return p;
+        else
+            STBI_FREE(p);
+
+    return nullptr;
 }
 
 void UnLoadImage(img_data img) noexcept

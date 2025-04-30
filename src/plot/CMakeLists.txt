@@ -1,12 +1,9 @@
-FetchContent_Declare(
+FetchContent_Populate(
   implot
+  QUIET
   GIT_REPOSITORY https://github.com/epezent/implot.git
-  GIT_TAG 419a8a0f5fcb77e1e7c19ab540441686bfe21bca)
+  GIT_TAG 3da8bd34299965d3b0ab124df743fe3e076fa222)
 
-FetchContent_GetProperties(implot)
-if(NOT implot_POPULATED)
-  FetchContent_Populate(implot)
-endif()
 
 add_library(implot STATIC)
 

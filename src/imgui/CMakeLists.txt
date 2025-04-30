@@ -1,12 +1,8 @@
-FetchContent_Declare(
+FetchContent_Populate(
   imgui
+  QUIET
   GIT_REPOSITORY https://github.com/ocornut/imgui.git
-  GIT_TAG 368123ab06b2b573d585e52f84cd782c5c006697)
-
-FetchContent_GetProperties(imgui)
-if(NOT imgui_POPULATED)
-  FetchContent_Populate(imgui)
-endif()
+  GIT_TAG 4806a1924ff6181180bf5e4b8b79ab4394118875)
 
 add_library(imgui STATIC)
 

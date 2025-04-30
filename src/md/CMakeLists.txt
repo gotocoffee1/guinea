@@ -1,24 +1,14 @@
-FetchContent_Declare(
+FetchContent_Populate(
   imgui_md
+  QUIET
   GIT_REPOSITORY https://github.com/gotocoffee1/imgui_md.git
-  GIT_TAG d4986daa87880c92016d85963e7f4195007a8157
-)
+  GIT_TAG d4986daa87880c92016d85963e7f4195007a8157)
 
-FetchContent_Declare(
-  md4c 
+FetchContent_Populate(
+  md4c
+  QUIET
   GIT_REPOSITORY https://github.com/mity/md4c.git
-  GIT_TAG 481fbfbdf72daab2912380d62bb5f2187d438408
-)
-
-FetchContent_GetProperties(imgui_md)
-if(NOT imgui_md_POPULATED)
-  FetchContent_Populate(imgui_md)
-endif()
-
-FetchContent_GetProperties(md4c)
-if(NOT md4c_POPULATED)
-  FetchContent_Populate(md4c)
-endif()
+  GIT_TAG 481fbfbdf72daab2912380d62bb5f2187d438408) 
 
 add_library(imgui_md STATIC)
 
