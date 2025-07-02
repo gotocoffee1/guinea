@@ -126,7 +126,7 @@ struct ui::guinea::texture
 #else
         if (auto* ctx = ui::ctx::get_current(); ctx->funcs.load_texture_ptr)
             return ctx->funcs.load_texture_ptr(*ctx, image_data, width, height);
-        return reinterpret_cast<ImTextureID>(nullptr);
+        return ImTextureID_Invalid;
 #endif
     }
 
@@ -199,25 +199,30 @@ void UnLoadImage(img_data img) noexcept
 ImTextureID LoadTexture(const_img_data image_data, int width, int height) noexcept
 {
     if (image_data == NULL)
-        return reinterpret_cast<ImTextureID>(nullptr);
+        return ImTextureID_Invalid;
     return ui::guinea::texture::load(image_data, width, height);
 }
 
 void UnLoadTexture(ImTextureID texture) noexcept
 {
-    if (texture == reinterpret_cast<ImTextureID>(nullptr))
+    if (texture == ImTextureID_Invalid)
         return;
     return ui::guinea::texture::unload(texture);
 }
 
-void Image(const Texture& tex, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& tint_col, const ImVec4& border_col)
+void Image(const Texture& tex, const ImVec2& uv0, const ImVec2& uv1)
 {
-    return Image(tex.id(), tex.size(), uv0, uv1, tint_col, border_col);
+    return Image(tex.ref(), tex.size(), uv0, uv1);
+}
+
+void ImageWithBg(const Texture& tex, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& bg_col, const ImVec4& tint_col)
+{
+    return ImageWithBg(tex.ref(), tex.size(), uv0, uv1, bg_col, tint_col);
 }
 
 bool ImageButton(const char* str_id, const Texture& tex, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& bg_col, const ImVec4& tint_col)
 {
-    return ImageButton(str_id, tex.id(), tex.size(), uv0, uv1, bg_col, tint_col);
+    return ImageButton(str_id, tex.ref(), tex.size(), uv0, uv1, bg_col, tint_col);
 }
 
 } // namespace ImGui

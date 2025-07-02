@@ -2,7 +2,7 @@ FetchContent_Populate(
   imgui_md
   QUIET
   GIT_REPOSITORY https://github.com/gotocoffee1/imgui_md.git
-  GIT_TAG d4986daa87880c92016d85963e7f4195007a8157)
+  GIT_TAG cff7c02604ab6294d4826534da1fb432112436f2)
 
 FetchContent_Populate(
   md4c

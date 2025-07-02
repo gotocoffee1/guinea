@@ -62,9 +62,9 @@ struct Child
 
 struct Font
 {
-    Font(ImFont* font)
+    Font(ImFont* font, float size)
     {
-        ImGui::PushFont(font);
+        ImGui::PushFont(font, size);
     }
     ~Font()
     {
@@ -136,34 +136,6 @@ struct TextWrapPos
     }
 
     DELETE_MOVE_COPY(TextWrapPos);
-};
-
-struct AllowKeyboardFocus
-{
-    AllowKeyboardFocus(bool allow_keyboard_focus)
-    {
-        ImGui::PushAllowKeyboardFocus(allow_keyboard_focus);
-    }
-    ~AllowKeyboardFocus()
-    {
-        ImGui::PopAllowKeyboardFocus();
-    }
-
-    DELETE_MOVE_COPY(AllowKeyboardFocus);
-};
-
-struct ButtonRepeat
-{
-    ButtonRepeat(bool repeat)
-    {
-        ImGui::PushButtonRepeat(repeat);
-    }
-    ~ButtonRepeat()
-    {
-        ImGui::PopButtonRepeat();
-    }
-
-    DELETE_MOVE_COPY(ButtonRepeat);
 };
 
 struct Group
@@ -513,13 +485,21 @@ struct Menu
 
 struct Tooltip
 {
+    bool IsOpen;
+
     Tooltip()
     {
-        ImGui::BeginTooltip();
+        IsOpen = ImGui::BeginTooltip();
     }
     ~Tooltip()
     {
-        ImGui::EndTooltip();
+        if (IsOpen)
+            ImGui::EndTooltip();
+    }
+
+    explicit operator bool() const
+    {
+        return IsOpen;
     }
 
     DELETE_MOVE_COPY(Tooltip);
@@ -705,27 +685,6 @@ struct ClipRect
     }
 
     DELETE_MOVE_COPY(ClipRect);
-};
-
-struct ChildFrame
-{
-    bool IsOpen;
-
-    ChildFrame(ImGuiID id, const ImVec2& size, ImGuiWindowFlags flags = 0)
-    {
-        IsOpen = ImGui::BeginChildFrame(id, size, flags);
-    }
-    ~ChildFrame()
-    {
-        ImGui::EndChildFrame();
-    }
-
-    explicit operator bool() const
-    {
-        return IsOpen;
-    }
-
-    DELETE_MOVE_COPY(ChildFrame);
 };
 
 #undef DELETE_MOVE_COPY
