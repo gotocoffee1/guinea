@@ -14,4 +14,5 @@ target_sources(
           "${imgui-node-editor_SOURCE_DIR}/imgui_node_editor.cpp"
           "${imgui-node-editor_SOURCE_DIR}/imgui_node_editor_api.cpp")
 
+target_compile_definitions(imgui_ne PRIVATE _SILENCE_CXX23_ALIGNED_STORAGE_DEPRECATION_WARNING)
 target_link_libraries(imgui_ne PUBLIC imgui)
