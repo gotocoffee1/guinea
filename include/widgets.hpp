@@ -119,6 +119,17 @@ struct Img
         return Img(p, w, h);
     }
 
+    // Specify width or height and the other dimension is calculated to keep the same aspect ratio.
+    Img resize_fixed_ratio(int w, int h) const noexcept
+    {
+        if (w) h = (_height * w) / _width;
+        else if (h) w = (_width * h) / _height;
+        else return Img(_data, _width, _height);
+        
+        auto* p = ResizeImage(_data, _width, _height, w, h);
+        return Img(p, w, h);
+    }
+
     int offset(int x, int y) const
     {
         IM_ASSERT((x < _width && y < _height) && "coordinates not in range");
