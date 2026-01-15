@@ -1,6 +1,7 @@
 #pragma once
 
 #define IMGUI_DEFINE_MATH_OPERATORS
+#define ImDrawIdx unsigned int
 
 #ifndef NDEBUG
 #define USE_GUINEA_ASSERT
